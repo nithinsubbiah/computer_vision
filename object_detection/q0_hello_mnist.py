@@ -1,6 +1,3 @@
-# --------------------------------------------------------
-# Written by Yufei Ye (https://github.com/JudyYe)
-# --------------------------------------------------------
 from __future__ import print_function
 
 import argparse
@@ -28,7 +25,7 @@ class SimpleCNN(nn.Module):
         self.pool2 = nn.AvgPool2d(2, 2)
 
         # TODO: q0.1 Modify the code here
-        self.flat_dim = 1
+        self.flat_dim = 64*7*7
         # chain your layers by Sequential -- another way
         # TODO: Modify the code here
         self.fc1 = nn.Sequential(*get_fc(self.flat_dim, 128, 'none'))
@@ -121,7 +118,9 @@ def main():
                            100. * batch_idx / len(train_loader), loss.item()))
                 train_log['iter'].append(cnt)
                 train_log['loss'].append(loss)
+                predicted = torch.argmax(output.data,dim=1)
                 # TODO: calculate your train accuracy!
+                train_acc = (predicted == target).sum().item()/data.shape[0]
                 train_log['accuracy'].append(train_acc)
             # Validation iteration
             if cnt % args.val_every == 0:
