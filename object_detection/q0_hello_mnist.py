@@ -113,6 +113,9 @@ def main():
             optimizer.step()
             # Log info
             if cnt % args.log_every == 0:
+                # print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
+                #     epoch, cnt, len(train_loader.dataset),
+                #            100. * batch_idx / len(train_loader), loss.item()))
                 print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     epoch, cnt, len(train_loader.dataset),
                            100. * batch_idx / len(train_loader), loss.item()))
