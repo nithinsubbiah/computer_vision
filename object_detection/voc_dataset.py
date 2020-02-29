@@ -12,6 +12,7 @@ import torch
 import torch.nn
 from PIL import Image
 from torch.utils.data import Dataset
+from torchvision import transforms
 
 
 class VOCDataset(Dataset):
@@ -36,6 +37,12 @@ class VOCDataset(Dataset):
 
         self.anno_list = self.preload_anno()
 
+        self.size = 227
+        # self.train_transforms_list = [transforms.RandomHorizontalFlip(p=0.5), transforms.RandomCrop(self.size)]
+        # self.train_transform = transforms.RandomApply(self.train_transforms_list, p=0.5)
+        self.train_transform = transforms.RandomHorizontalFlip(p=0.5)
+        self.test_transform = transforms.CenterCrop((self.size,self.size))
+        
     @classmethod
     def get_class_name(cls, index):
         return cls.CLASS_NAMES[index]
@@ -53,11 +60,37 @@ class VOCDataset(Dataset):
          where both class and weight are a numpy array in shape of [20],
         """
         label_list = []
+
         for index in self.index_list:
+            class_names = set()
+            occurence_dict = {}
+            difficult_dict = {}
+
+            class_labels = np.zeros(20)
+            weights = np.ones(20)
             fpath = os.path.join(self.ann_dir, index + '.xml')
             tree = ET.parse(fpath)
-            # TODO: insert your code here, preload labels
+            root = tree.getroot()
+            
+            for obj in root.findall('object'):
+                obj_name = obj.find('name').text
+                class_names.add(obj_name)
+                if not obj_name in occurence_dict:
+                    occurence_dict[obj_name] = 1
+                    difficult_dict[obj_name] = 0
+                else:
+                    occurence_dict[obj_name] += 1
+                difficulty = int(obj.find("difficult").text)
+                occurence_dict[obj_name] += difficulty
+                class_idx = self.get_class_index(obj_name)
+                class_labels[class_idx] = 1
 
+            for c_name in class_names:
+                if occurence_dict[c_name] == difficult_dict[c_name]:
+                    class_idx = self.get_class_index(obj_name)
+                    weights[class_idx] = 0
+
+            label_list.append([class_labels, weights])
         return label_list
 
     def __getitem__(self, index):
@@ -70,9 +103,18 @@ class VOCDataset(Dataset):
         """
         findex = self.index_list[index]
         fpath = os.path.join(self.img_dir, findex + '.jpg')
-        # TODO: insert your code here. hint: read image, find the labels and weight.
 
+        lab_vec, wgt_vec = self.anno_list[index]
+        img = Image.open(fpath)
+        # if(self.split == 'trainval'):
+        #     img = self.train_transform(img)
+        # if(self.split == 'test'):
+        #     img = self.test_transform(img)
+
+        img = transforms.functional.resize(img, size=(self.size,self.size))
+        img = transforms.functional.to_tensor(img)
         image = torch.FloatTensor(img)
+        img = transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
         label = torch.FloatTensor(lab_vec)
         wgt = torch.FloatTensor(wgt_vec)
         return image, label, wgt

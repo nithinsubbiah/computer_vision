@@ -19,17 +19,18 @@ class SimpleCNN(nn.Module):
         # add your layer one by one -- one way to add layers
         self.conv1 = nn.Conv2d(c_dim, 32, 5, padding=2)
         self.conv2 = nn.Conv2d(32, 64, 5, padding=2)
-        # TODO: Modify the code here
-        self.nonlinear = lambda x: x
+        # self.nonlinear = lambda x: x
+        self.nonlinear = nn.ReLU()
         self.pool1 = nn.AvgPool2d(2, 2)
         self.pool2 = nn.AvgPool2d(2, 2)
 
         # TODO: q0.1 Modify the code here
-        self.flat_dim = 64*7*7
+        self.flat_dim = int(64*(inp_size//4)*(inp_size//4))
+
         # chain your layers by Sequential -- another way
-        # TODO: Modify the code here
         self.fc1 = nn.Sequential(*get_fc(self.flat_dim, 128, 'none'))
-        self.fc2 = nn.Sequential(*get_fc(128, num_classes, 'softmax'))
+        self.fc2 = nn.Sequential(*get_fc(128, num_classes, 'none'))
+        # self.fc2 = nn.Sequential(*get_fc(128, num_classes, 'softmax'))
 
     def forward(self, x):
         """
@@ -37,6 +38,7 @@ class SimpleCNN(nn.Module):
         :return: out: classification score in shape of (N, Nc)
         """
         N = x.size(0)
+
         x = self.conv1(x)
         x = self.nonlinear(x)
         x = self.pool1(x)
@@ -44,11 +46,11 @@ class SimpleCNN(nn.Module):
         x = self.conv2(x)
         x = self.nonlinear(x)
         x = self.pool2(x)
-
-        # TODO: q0.1 hint (you might want to check the dimension of input here)
+        
         flat_x = x.view(N, self.flat_dim)
         out = self.fc1(flat_x)
         out = self.fc2(out)
+
         return out
 
 
@@ -92,6 +94,8 @@ def main():
     # 2. define the model, and optimizer.
     model = SimpleCNN().to(device)
     model.train()
+    # pytorch_total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    # import pdb;pdb.set_trace()
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=args.gamma)
@@ -111,6 +115,7 @@ def main():
             loss.backward()
             # Optimizer takes one step
             optimizer.step()
+            
             # Log info
             if cnt % args.log_every == 0:
                 # print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
