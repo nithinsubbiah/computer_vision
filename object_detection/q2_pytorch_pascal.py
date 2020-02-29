@@ -42,10 +42,9 @@ def main():
             loss = criterion(output, target)
             loss.backward()
             optimizer.step()
-            writer.add_scalar('Loss/train', loss, cnt)
             # Log info
             if cnt % args.log_every == 0:
-                # todo: add your visualization code
+                writer.add_scalar('Loss/train', loss, cnt)
                 print('Train Epoch: {} [{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     epoch, cnt, 100. * batch_idx / len(train_loader), loss.item()))
             # Validation iteration

@@ -102,7 +102,8 @@ def eval_dataset_map(model, device, test_loader):
     pred = []
     valid = []
     with torch.no_grad():
-        for data, target, wgt in test_loader:            
+        for data, target, wgt in test_loader:   
+            data, target, wgt = data.to(device), target.to(device), wgt.to(device)         
             output = model(data)
             gt.append(target)
             pred.append(output)
