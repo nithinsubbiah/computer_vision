@@ -24,13 +24,10 @@ class SimpleCNN(nn.Module):
         self.pool1 = nn.AvgPool2d(2, 2)
         self.pool2 = nn.AvgPool2d(2, 2)
 
-        # TODO: q0.1 Modify the code here
         self.flat_dim = int(64*(inp_size//4)*(inp_size//4))
 
-        # chain your layers by Sequential -- another way
-        self.fc1 = nn.Sequential(*get_fc(self.flat_dim, 128, 'none'))
+        self.fc1 = nn.Sequential(*get_fc(self.flat_dim, 128, 'relu'))
         self.fc2 = nn.Sequential(*get_fc(128, num_classes, 'none'))
-        # self.fc2 = nn.Sequential(*get_fc(128, num_classes, 'softmax'))
 
     def forward(self, x):
         """
