@@ -38,7 +38,7 @@ class VOCDataset(Dataset):
         self.anno_list = self.preload_anno()
 
         self.size = 227
-        # self.train_transforms_list = [transforms.RandomHorizontalFlip(p=0.5), transforms.RandomCrop(self.size)]
+        # self.train_transforms_list = [transforms.RandomHorizontalFlip(p=0.5), transforms.RandomCrop(self.size, pad_if_needed=True)]
         # self.train_transform = transforms.RandomApply(self.train_transforms_list, p=0.5)
         self.train_transform = transforms.RandomHorizontalFlip(p=0.5)
         self.test_transform = transforms.CenterCrop((self.size,self.size))
