@@ -44,7 +44,7 @@ def main():
             optimizer.step()
             # Log info
             if cnt % args.log_every == 0:
-                writer.add_scalar('Loss/train', loss, cnt)
+                writer.add_scalar('Loss/train', loss.item(), cnt)
                 print('Train Epoch: {} [{} ({:.0f}%)]\tLoss: {:.6f}'.format(
                     epoch, cnt, 100. * batch_idx / len(train_loader), loss.item()))
             # Validation iteration
