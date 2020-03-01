@@ -109,8 +109,8 @@ class VOCDataset(Dataset):
         img = Image.open(fpath)
         if(self.split == 'trainval'):
             img = self.train_transform(img)
-        if(self.split == 'test'):
-            img = self.test_transform(img)
+        # if(self.split == 'test'):
+            # img = self.test_transform(img)
 
         img = transforms.functional.resize(img, size=(self.size,self.size))
         img = transforms.functional.to_tensor(img)
