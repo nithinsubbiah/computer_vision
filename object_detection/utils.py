@@ -105,9 +105,9 @@ def eval_dataset_map(model, device, test_loader):
         for data, target, wgt in test_loader:   
             data, target, wgt = data.to(device), target.to(device), wgt.to(device)         
             output = model(data)
-            gt.append(target.data.cpu().np())
-            pred.append(output.data.cpu().np())
-            valid.append(wgt.data.cpu().np())
+            gt.append(target.data.cpu().numpy())
+            pred.append(output.data.cpu().numpy())
+            valid.append(wgt.data.cpu().numpy())
         gt = np.vstack(gt)
         pred = np.vstack(pred)
         valid = np.vstack(valid)
