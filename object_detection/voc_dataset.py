@@ -38,11 +38,12 @@ class VOCDataset(Dataset):
         self.anno_list = self.preload_anno()
 
         self.size = 227
-        # self.train_transforms_list = [transforms.RandomHorizontalFlip(p=0.5), transforms.RandomCrop(self.size, pad_if_needed=True)]
-        # self.train_transform = transforms.RandomApply(self.train_transforms_list, p=0.5)
-        self.train_transform = transforms.Compose([transforms.Resize((self.size,self.size)), transforms.RandomHorizontalFlip(p=0.5), transforms.ToTensor()])
-        self.test_transform = transforms.Compose([transforms.CenterCrop((self.size,self.size)), transforms.Resize((self.size,self.size)), transforms.ToTensor()])
         
+        # self.train_transform = transforms.Compose([transforms.Resize((self.size,self.size)), transforms.RandomHorizontalFlip(p=0.5), transforms.ToTensor()])
+        # self.test_transform = transforms.Compose([transforms.CenterCrop((self.size,self.size)), transforms.Resize((self.size,self.size)), transforms.ToTensor()])
+        self.train_transform = transforms.Compose([transforms.RandomHorizontalFlip(p=0.5)])
+        self.test_transform = transforms.Compose([transforms.CenterCrop((self.size,self.size))])
+
     @classmethod
     def get_class_name(cls, index):
         return cls.CLASS_NAMES[index]
@@ -111,8 +112,8 @@ class VOCDataset(Dataset):
         if(self.split == 'test'):
             img = self.test_transform(img)
 
-        # img = transforms.functional.resize(img, size=(self.size,self.size))
-        # img = transforms.functional.to_tensor(img)
+        img = transforms.functional.resize(img, size=(self.size,self.size))
+        img = transforms.functional.to_tensor(img)
         image = torch.FloatTensor(img)
         img = transforms.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))
         label = torch.FloatTensor(lab_vec)
