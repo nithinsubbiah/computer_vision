@@ -26,7 +26,8 @@ def main():
     test_loader = utils.get_data_loader('voc', train=False, batch_size=args.test_batch_size, split='test')
 
     # model = SimpleCNN(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
-    model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
+    # model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
+    model = torchvision.models.resnet18()
     model.train()
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -59,9 +60,9 @@ def main():
         scheduler.step()
     
         if epoch % 10 == 0:
-            torch.save(model,"./checkpoints/model_epoch_"+str(epoch) +"_"+date_str)
+            torch.save(model.state_dict(), "./checkpoints/model_epoch_"+str(epoch) +"_"+date_str+".pth")
 
-    torch.save(model, "./checkpoints/model_final_"+date_str)
+    torch.save(model.state_dict(), "./checkpoints/model_epoch_"+str(epoch) +"_"+date_str+".pth")
     
     # Validation iteration
     test_loader = utils.get_data_loader('voc', train=False, batch_size=args.test_batch_size, split='test')
