@@ -10,6 +10,7 @@ import utils
 from q0_hello_mnist import SimpleCNN
 from caffe_net import CaffeNet
 from voc_dataset import VOCDataset
+import torchvision.models as models
 
 from tensorboardX import SummaryWriter
 
@@ -24,11 +25,6 @@ def main():
     train_loader = utils.get_data_loader('voc', train=True, batch_size=args.batch_size, split='trainval')
     test_loader = utils.get_data_loader('voc', train=False, batch_size=args.test_batch_size, split='test')
 
-    # 2. define the model, and optimizer.
-    # TODO: modify your model here!
-    # bad idea of use simple CNN, but let's give it a shot!
-    # In task 2, 3, 4, you might want to modify this line to be configurable to other models.
-    # Remember: always reuse your code wisely.
     # model = SimpleCNN(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
     model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
     model.train()
