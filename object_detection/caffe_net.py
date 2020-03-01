@@ -13,8 +13,6 @@ class CaffeNet(nn.Module):
         self.nonlinear = nn.ReLU()
         self.max_pool = nn.MaxPool2d(kernel_size=3, stride=2)
         self.drop_out = nn.Dropout(p=0.5) 
-        # self.conv1_bn = nn.BatchNorm2d(96)
-        # self.conv2_bn = nn.BatchNorm2d(256)
 
         self.conv1 = nn.Conv2d(in_channels=c_dim, out_channels=96, kernel_size=11, stride=4, padding=0)
         self.conv2 = nn.Conv2d(in_channels=96, out_channels=256, kernel_size=5, stride=1, padding=2)
@@ -33,13 +31,11 @@ class CaffeNet(nn.Module):
 
         x = self.conv1(x)
         x = self.nonlinear(x)
-        x = self.max_pool(x)
-        # x = self.conv1_bn(x)
+        x = self.max_pool(x)    
 
         x = self.conv2(x)
         x = self.nonlinear(x)
         x = self.max_pool(x)
-        # x = self.conv2_bn(x)
 
         x = self.conv3(x)
         x = self.nonlinear(x)
