@@ -50,10 +50,8 @@ class CaffeNet(nn.Module):
         flat_x = x.view(N, 9216)
         flat_x = self.fc1(flat_x)
         flat_x = self.drop_out(flat_x)
-
         flat_x = self.fc2(flat_x)
         flat_x = self.drop_out(flat_x)
-
         out = self.fc3(flat_x)
 
         return out

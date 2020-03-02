@@ -25,7 +25,7 @@ def main():
 
     # model = SimpleCNN(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
     # model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
-    model = models.resnet18()
+    model = models.resnet18(pretrained=True)
     model_resnet = True
     if(model_resnet):
         model.fc = nn.Linear(in_features=512, out_features=len(VOCDataset.CLASS_NAMES), bias=True)
@@ -39,7 +39,7 @@ def main():
     for epoch in range(args.epochs):
         for batch_idx, (data, target, wgt) in enumerate(train_loader):
             data, target, wgt = data.to(device), target.to(device), wgt.to(device)           
-
+            writer.add_image('train_images'+str(cnt), data[0])
             optimizer.zero_grad()
             output = model(data)
             criterion = torch.nn.BCEWithLogitsLoss(weight=wgt)
@@ -68,9 +68,6 @@ def main():
     
         if epoch % 10 == 0:
             torch.save(model.state_dict(), "./checkpoints/model_epoch_"+str(epoch) +"_"+date_str+".pth")
-            writer.add_images('train_images', data[0])
-
-
 
     torch.save(model.state_dict(), "./checkpoints/model_epoch_"+str(epoch) +"_"+date_str+".pth")
     
