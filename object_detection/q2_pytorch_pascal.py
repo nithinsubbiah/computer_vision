@@ -39,7 +39,6 @@ def main():
     for epoch in range(args.epochs):
         for batch_idx, (data, target, wgt) in enumerate(train_loader):
             data, target, wgt = data.to(device), target.to(device), wgt.to(device)           
-            writer.add_image('train_images'+str(cnt), data[0])
             optimizer.zero_grad()
             output = model(data)
             criterion = torch.nn.BCEWithLogitsLoss(weight=wgt)
@@ -65,7 +64,7 @@ def main():
             writer.add_histogram('conv1_histogram_of_grad', model.conv1.weight.grad.flatten().detach(), cnt)
         current_lr = scheduler.optimizer.param_groups[0]['lr']
         writer.add_scalar('learning_rate', current_lr, cnt)
-    
+        writer.add_image('train_images'+str(epoch), data[0])
         if epoch % 10 == 0:
             torch.save(model.state_dict(), "./checkpoints/model_epoch_"+str(epoch) +"_"+date_str+".pth")
 
