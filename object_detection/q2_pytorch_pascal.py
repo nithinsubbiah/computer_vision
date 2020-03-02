@@ -1,10 +1,8 @@
-# --------------------------------------------------------
-# Written by Yufei Ye (https://github.com/JudyYe)
-# --------------------------------------------------------
 from __future__ import print_function
 
 import numpy as np
 import torch
+import torch.nn as nn
 
 import utils
 from q0_hello_mnist import SimpleCNN
@@ -26,8 +24,12 @@ def main():
     test_loader = utils.get_data_loader('voc', train=False, batch_size=args.test_batch_size, split='test')
 
     # model = SimpleCNN(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
-    model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
-    # model = models.resnet18()
+    # model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
+    model = models.resnet18()
+    model_resnet = True
+    if(model_resnet):
+        model.fc = nn.Linear(in_features=512, out_features=len(VOCDataset.CLASS_NAMES), bias=True)
+
     model.train()
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -36,10 +38,10 @@ def main():
     cnt = 0
     for epoch in range(args.epochs):
         for batch_idx, (data, target, wgt) in enumerate(train_loader):
-            data, target, wgt = data.to(device), target.to(device), wgt.to(device)
+            data, target, wgt = data.to(device), target.to(device), wgt.to(device)           
+
             optimizer.zero_grad()
             output = model(data)
-
             criterion = torch.nn.BCEWithLogitsLoss(weight=wgt)
             loss = criterion(output, target)
             loss.backward()
@@ -56,11 +58,19 @@ def main():
                 model.train()
                 writer.add_scalar('mAP/test', eval_mAP, cnt)
             cnt += 1
+
             
         scheduler.step()
+        if not model.conv1.weight.grad is None:
+            writer.add_histogram('conv1_histogram_of_grad', model.conv1.weight.grad.flatten().detach(), cnt)
+        current_lr = scheduler.optimizer.param_groups[0]['lr']
+        writer.add_scalar('learning_rate', current_lr, cnt)
     
         if epoch % 10 == 0:
             torch.save(model.state_dict(), "./checkpoints/model_epoch_"+str(epoch) +"_"+date_str+".pth")
+            writer.add_images('train_images', data[0])
+
+
 
     torch.save(model.state_dict(), "./checkpoints/model_epoch_"+str(epoch) +"_"+date_str+".pth")
     
