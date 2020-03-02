@@ -26,8 +26,8 @@ def main():
     test_loader = utils.get_data_loader('voc', train=False, batch_size=args.test_batch_size, split='test')
 
     # model = SimpleCNN(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
-    # model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
-    model = torchvision.models.resnet18()
+    model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
+    # model = models.resnet18()
     model.train()
     model = model.to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
