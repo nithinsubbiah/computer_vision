@@ -24,9 +24,9 @@ def main():
     test_loader = utils.get_data_loader('voc', train=False, batch_size=args.test_batch_size, split='test')
 
     # model = SimpleCNN(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
-    # model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
-    model = models.resnet18(pretrained=True)
-    model_resnet = True
+    model = CaffeNet(num_classes=len(VOCDataset.CLASS_NAMES), inp_size=227, c_dim=3).to(device)
+    # model = models.resnet18(pretrained=True)
+    # model_resnet = True
     if(model_resnet):
         model.fc = nn.Linear(in_features=512, out_features=len(VOCDataset.CLASS_NAMES), bias=True)
 
