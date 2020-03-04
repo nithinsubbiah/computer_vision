@@ -1,6 +1,5 @@
 from __future__ import print_function
 
-import imageio
 import numpy as np
 import os
 import xml.etree.ElementTree as ET

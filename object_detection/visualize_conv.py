@@ -2,6 +2,8 @@ import numpy as np
 import glob
 
 import torch
+import torchvision.models as models
+
 import matplotlib.pyplot as plt
 
 from caffe_net import CaffeNet
