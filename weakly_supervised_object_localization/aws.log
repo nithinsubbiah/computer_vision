@@ -1,0 +1,495 @@
+ubuntu@ip-172-31-95-159:~$ source activate pytorch_p27
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ git clone https://senthilps8@bitbucket.org/cmu16824spring19/hw2-release.git
+Cloning into 'hw2-release'...
+Password for 'https://senthilps8@bitbucket.org': 
+remote: Counting objects: 84, done.
+remote: Compressing objects: 100% (79/79), done.
+remote: Total 84 (delta 14), reused 0 (delta 0)
+Unpacking objects: 100% (84/84), done.
+Checking connectivity... done.
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ cd hw2-release/
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ ls
+experiments  faster_rcnn  free_loc  _init_paths.py  __init__.py  LICENSE  README.md  test.py  train.py
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ pip install visdom
+Collecting visdom
+  Downloading https://files.pythonhosted.org/packages/97/c4/5f5356fd57ae3c269e0e31601ea6487e0622fedc6756a591e4a5fd66cc7a/visdom-0.1.8.8.tar.gz (1.4MB)
+    100% |████████████████████████████████| 1.4MB 16.2MB/s 
+Requirement already satisfied: numpy>=1.8 in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from visdom) (1.14.5)
+Requirement already satisfied: scipy in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from visdom) (1.1.0)
+Requirement already satisfied: requests in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from visdom) (2.20.1)
+Requirement already satisfied: tornado in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from visdom) (5.0.2)
+Requirement already satisfied: pyzmq in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from visdom) (17.0.0)
+Requirement already satisfied: six in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from visdom) (1.11.0)
+Collecting torchfile (from visdom)
+  Downloading https://files.pythonhosted.org/packages/91/af/5b305f86f2d218091af657ddb53f984ecbd9518ca9fe8ef4103a007252c9/torchfile-0.1.0.tar.gz
+Requirement already satisfied: websocket-client in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from visdom) (0.54.0)
+Requirement already satisfied: pillow in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from visdom) (5.2.0)
+Requirement already satisfied: idna<2.8,>=2.5 in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from requests->visdom) (2.6)
+Requirement already satisfied: chardet<3.1.0,>=3.0.2 in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from requests->visdom) (3.0.4)
+Requirement already satisfied: urllib3<1.25,>=1.21.1 in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from requests->visdom) (1.22)
+Requirement already satisfied: certifi>=2017.4.17 in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from requests->visdom) (2018.11.29)
+Requirement already satisfied: futures in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from tornado->visdom) (3.2.0)
+Requirement already satisfied: singledispatch in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from tornado->visdom) (3.4.0.3)
+Requirement already satisfied: backports_abc>=0.4 in /home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages (from tornado->visdom) (0.5)
+Building wheels for collected packages: visdom, torchfile
+  Running setup.py bdist_wheel for visdom ... done
+  Stored in directory: /home/ubuntu/.cache/pip/wheels/ee/87/ce/a5023722374ca73b57fc8d4284ba6f973c01219b3c385a07e0
+  Running setup.py bdist_wheel for torchfile ... done
+  Stored in directory: /home/ubuntu/.cache/pip/wheels/b1/c3/d6/9a1cc8f3a99a0fc1124cae20153f36af59a6e683daca0a0814
+Successfully built visdom torchfile
+Installing collected packages: torchfile, visdom
+Successfully installed torchfile-0.1.0 visdom-0.1.8.8
+You are using pip version 10.0.1, however version 19.0.3 is available.
+You should consider upgrading via the 'pip install --upgrade pip' command.
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ lsblk
+NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+xvda    202:0    0   75G  0 disk 
+└─xvda1 202:1    0   75G  0 part /
+xvdf    202:80   0   30G  0 disk 
+loop0     7:0    0 89.5M  1 loop /snap/core/6130
+loop1     7:1    0   18M  1 loop /snap/amazon-ssm-agent/930
+loop2     7:2    0 16.5M  1 loop /snap/amazon-ssm-agent/784
+loop3     7:3    0   91M  1 loop /snap/core/6350
+loop4     7:4    0 17.9M  1 loop /snap/amazon-ssm-agent/1068
+loop5     7:5    0   91M  1 loop /snap/core/6405
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ sudo file -s /dev/xvdf 
+/dev/xvdf: data
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ sudo mkfs -t ext4 /dev/xvdf 
+mke2fs 1.42.13 (17-May-2015)
+Creating filesystem with 7864320 4k blocks and 1966080 inodes
+Filesystem UUID: af5dbc72-3fec-4cc5-95cd-1113fd18b5e0
+Superblock backups stored on blocks: 
+	32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632, 2654208, 
+	4096000
+
+Allocating group tables: done                            
+Writing inode tables: done                            
+Creating journal (32768 blocks): done
+Writing superblocks and filesystem accounting information: done   
+
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ sudo mkdir /data
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ sudo mount /dev/xvdf /data 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ sudo chmod 777 -R /data/
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ df -h
+Filesystem      Size  Used Avail Use% Mounted on
+udev             30G     0   30G   0% /dev
+tmpfs           6.0G  8.8M  6.0G   1% /run
+/dev/xvda1       73G   65G  8.2G  89% /
+tmpfs            30G     0   30G   0% /dev/shm
+tmpfs           5.0M     0  5.0M   0% /run/lock
+tmpfs            30G     0   30G   0% /sys/fs/cgroup
+/dev/loop2       17M   17M     0 100% /snap/amazon-ssm-agent/784
+/dev/loop0       90M   90M     0 100% /snap/core/6130
+/dev/loop1       18M   18M     0 100% /snap/amazon-ssm-agent/930
+/dev/loop3       91M   91M     0 100% /snap/core/6350
+/dev/loop5       91M   91M     0 100% /snap/core/6405
+/dev/loop4       18M   18M     0 100% /snap/amazon-ssm-agent/1068
+tmpfs           6.0G     0  6.0G   0% /run/user/1000
+/dev/xvdf        30G   44M   28G   1% /data
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ cd /data/
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$ wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar
+--2019-02-27 00:04:53--  http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtrainval_06-Nov-2007.tar
+Resolving host.robots.ox.ac.uk (host.robots.ox.ac.uk)... 129.67.94.152
+Connecting to host.robots.ox.ac.uk (host.robots.ox.ac.uk)|129.67.94.152|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 460032000 (439M) [application/x-tar]
+Saving to: ‘VOCtrainval_06-Nov-2007.tar’
+
+VOCtrainval_06-Nov-2007.tar                        100%[================================================================================================================>] 438.72M  15.5MB/s    in 30s     
+
+2019-02-27 00:05:23 (14.8 MB/s) - ‘VOCtrainval_06-Nov-2007.tar’ saved [460032000/460032000]
+
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$ tar xf VOCtrainval_06-Nov-2007.tar 
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$  wget http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar && tar xf VOCtest_06-Nov-2007.tar
+--2019-02-27 00:05:31--  http://host.robots.ox.ac.uk/pascal/VOC/voc2007/VOCtest_06-Nov-2007.tar
+Resolving host.robots.ox.ac.uk (host.robots.ox.ac.uk)... 129.67.94.152
+Connecting to host.robots.ox.ac.uk (host.robots.ox.ac.uk)|129.67.94.152|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 451020800 (430M) [application/x-tar]
+Saving to: ‘VOCtest_06-Nov-2007.tar’
+
+VOCtest_06-Nov-2007.tar                            100%[================================================================================================================>] 430.13M  15.6MB/s    in 28s     
+
+2019-02-27 00:06:00 (15.1 MB/s) - ‘VOCtest_06-Nov-2007.tar’ saved [451020800/451020800]
+
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$ cd
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ cd hw2-release/
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ ls
+experiments  faster_rcnn  free_loc  _init_paths.py  __init__.py  LICENSE  README.md  test.py  train.py
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ cd data/
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/data$ ln -s /data/VOCdevkit VOCdevkit2007 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/data/VOCdevkit2007$ cd /data/
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$ ls
+lost+found  VOCdevkit  VOCtest_06-Nov-2007.tar  VOCtrainval_06-Nov-2007.tar
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$ wget wget http://www.cs.cmu.edu/~spurushw/hw2_files/selective_search_data.tar && tar xf selective_search_data.tar 
+--2019-02-27 00:32:50--  http://wget/
+Resolving wget (wget)... failed: Name or service not known.
+wget: unable to resolve host address ‘wget’
+--2019-02-27 00:32:50--  http://www.cs.cmu.edu/~spurushw/hw2_files/selective_search_data.tar
+Resolving www.cs.cmu.edu (www.cs.cmu.edu)... 128.2.42.95
+Connecting to www.cs.cmu.edu (www.cs.cmu.edu)|128.2.42.95|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 274647040 (262M) [application/x-tar]
+Saving to: ‘selective_search_data.tar’
+
+selective_search_data.tar                          100%[================================================================================================================>] 261.92M  1.43MB/s    in 2m 30s  
+
+2019-02-27 00:35:19 (1.75 MB/s) - ‘selective_search_data.tar’ saved [274647040/274647040]
+
+FINISHED --2019-02-27 00:35:19--
+Total wall clock time: 2m 30s
+Downloaded: 1 files, 262M in 2m 30s (1.75 MB/s)
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$ ls
+lost+found  selective_search_data.tar  VOCdevkit  VOCtest_06-Nov-2007.tar  VOCtrainval_06-Nov-2007.tar
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$ tar xf selective_search_data.tar
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$ ls
+lost+found  selective_search_data  selective_search_data.tar  VOCdevkit  VOCtest_06-Nov-2007.tar  VOCtrainval_06-Nov-2007.tar
+(pytorch_p27) ubuntu@ip-172-31-95-159:/data$ cd 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~$ cd hw2-release/
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ cd data/
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/data$ ln -s /data/selective_search_data 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/data$ ls
+selective_search_data  VOCdevkit2007
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/data$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/data$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/data$ cd ../
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release$ cd faster_rcnn/
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/faster_rcnn$ conda install pip pyyaml sympy h5py cython numpy scipy 
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.5.12
+  latest version: 4.6.7
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+
+## Package Plan ##
+
+  environment location: /home/ubuntu/anaconda3/envs/pytorch_p27
+
+  added / updated specs: 
+    - cython
+    - h5py
+    - numpy
+    - pip
+    - pyyaml
+    - scipy
+    - sympy
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    pip-19.0.3                 |           py27_0         1.8 MB
+    hdf5-1.10.4                |       hb1b8bf9_0         5.3 MB
+    mkl-2019.1                 |              144       204.6 MB
+    mkl_fft-1.0.10             |   py27ha843d7b_0         161 KB
+    numexpr-2.6.9              |   py27h9e4a6bb_0         193 KB
+    openssl-1.0.2r             |       h7b6447c_0         3.2 MB
+    mkl-service-1.1.2          |   py27he904b0f_5         131 KB
+    cython-0.29.5              |   py27he6710b0_0         2.1 MB
+    pytables-3.4.4             |   py27h71ec239_0         1.4 MB
+    scikit-learn-0.20.2        |   py27hd81dba3_0         5.7 MB
+    pyyaml-3.13                |   py27h14c3975_0         173 KB
+    sympy-1.3                  |           py27_0         9.7 MB
+    certifi-2018.11.29         |           py27_0         146 KB
+    numpy-base-1.15.4          |   py27hde5b4d6_0         4.2 MB
+    h5py-2.9.0                 |   py27h7918eee_0         1.1 MB
+    numpy-1.15.4               |   py27h7e9f1db_0          47 KB
+    scipy-1.2.1                |   py27h7c811a0_0        17.6 MB
+    blosc-1.15.0               |       hd408876_0         705 KB
+    mkl_random-1.0.2           |   py27hd81dba3_0         383 KB
+    ------------------------------------------------------------
+                                           Total:       258.6 MB
+
+The following packages will be UPDATED:
+
+    blosc:           1.14.3-hdbcaa40_0                 --> 1.15.0-hd408876_0    
+    ca-certificates: 2018.11.29-ha4d7672_0 conda-forge --> 2019.1.23-0          
+    cython:          0.28.2-py27h14c3975_0             --> 0.29.5-py27he6710b0_0
+    h5py:            2.8.0-py27h989c5e5_3              --> 2.9.0-py27h7918eee_0 
+    hdf5:            1.10.2-hba1933b_1                 --> 1.10.4-hb1b8bf9_0    
+    libstdcxx-ng:    7.2.0-hdf63c60_3                  --> 8.2.0-hdf63c60_1     
+    mkl:             2018.0.2-1                        --> 2019.1-144           
+    mkl-service:     1.1.2-py27hb2d42c5_4              --> 1.1.2-py27he904b0f_5 
+    mkl_fft:         1.0.1-py27h3010b51_0              --> 1.0.10-py27ha843d7b_0
+    mkl_random:      1.0.1-py27h629b387_0              --> 1.0.2-py27hd81dba3_0 
+    numexpr:         2.6.5-py27h7bf3b9c_0              --> 2.6.9-py27h9e4a6bb_0 
+    numpy:           1.14.3-py27hcd700cb_1             --> 1.15.4-py27h7e9f1db_0
+    numpy-base:      1.14.3-py27h9be14a7_1             --> 1.15.4-py27hde5b4d6_0
+    openssl:         1.0.2p-h14c3975_1002  conda-forge --> 1.0.2r-h7b6447c_0    
+    pip:             10.0.1-py27_0                     --> 19.0.3-py27_0        
+    pytables:        3.4.3-py27h02b9ad4_2              --> 3.4.4-py27h71ec239_0 
+    pyyaml:          3.12-py27h2d70dd7_1               --> 3.13-py27h14c3975_0  
+    scikit-learn:    0.19.1-py27h445a80a_0             --> 0.20.2-py27hd81dba3_0
+    scipy:           1.1.0-py27hfc37229_0              --> 1.2.1-py27h7c811a0_0 
+    sympy:           1.1.1-py27hc28188a_0              --> 1.3-py27_0           
+
+The following packages will be DOWNGRADED:
+
+    certifi:         2018.11.29-py27_1000  conda-forge --> 2018.11.29-py27_0    
+
+Proceed ([y]/n)? y
+
+
+Downloading and Extracting Packages
+pip-19.0.3           | 1.8 MB    | ################################################################################################################################################################# | 100% 
+hdf5-1.10.4          | 5.3 MB    | ################################################################################################################################################################# | 100% 
+mkl-2019.1           | 204.6 MB  | ################################################################################################################################################################# | 100% 
+mkl_fft-1.0.10       | 161 KB    | ################################################################################################################################################################# | 100% 
+numexpr-2.6.9        | 193 KB    | ################################################################################################################################################################# | 100% 
+openssl-1.0.2r       | 3.2 MB    | ################################################################################################################################################################# | 100% 
+mkl-service-1.1.2    | 131 KB    | ################################################################################################################################################################# | 100% 
+cython-0.29.5        | 2.1 MB    | ################################################################################################################################################################# | 100% 
+pytables-3.4.4       | 1.4 MB    | ################################################################################################################################################################# | 100% 
+scikit-learn-0.20.2  | 5.7 MB    | ################################################################################################################################################################# | 100% 
+pyyaml-3.13          | 173 KB    | ################################################################################################################################################################# | 100% 
+sympy-1.3            | 9.7 MB    | ################################################################################################################################################################# | 100% 
+certifi-2018.11.29   | 146 KB    | ################################################################################################################################################################# | 100% 
+numpy-base-1.15.4    | 4.2 MB    | ################################################################################################################################################################# | 100% 
+h5py-2.9.0           | 1.1 MB    | ################################################################################################################################################################# | 100% 
+numpy-1.15.4         | 47 KB     | ################################################################################################################################################################# | 100% 
+scipy-1.2.1          | 17.6 MB   | ################################################################################################################################################################# | 100% 
+blosc-1.15.0         | 705 KB    | ################################################################################################################################################################# | 100% 
+mkl_random-1.0.2     | 383 KB    | ################################################################################################################################################################# | 100% 
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/faster_rcnn$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/faster_rcnn$ conda install opencv
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.5.12
+  latest version: 4.6.7
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+
+## Package Plan ##
+
+  environment location: /home/ubuntu/anaconda3/envs/pytorch_p27
+
+  added / updated specs: 
+    - opencv
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    libvpx-1.7.0               |       h439df22_0         2.4 MB
+    freeglut-3.0.0             |       hf484d3e_5         251 KB
+    pytables-3.4.4             |   py27ha205bf6_0         1.5 MB
+    libopencv-3.4.2            |       hb342d67_1        40.4 MB
+    libglu-9.0.0               |       hf484d3e_1         377 KB
+    libopus-1.3                |       h7b6447c_0         631 KB
+    jasper-2.0.14              |       h07fcdf6_1         1.1 MB
+    py-opencv-3.4.2            |   py27hb342d67_1         1.2 MB
+    opencv-3.4.2               |   py27h6fd60c2_1          11 KB
+    ffmpeg-4.0                 |       hcdf2ecd_0        73.7 MB
+    ------------------------------------------------------------
+                                           Total:       121.5 MB
+
+The following NEW packages will be INSTALLED:
+
+    ffmpeg:    4.0-hcdf2ecd_0      
+    freeglut:  3.0.0-hf484d3e_5    
+    jasper:    2.0.14-h07fcdf6_1   
+    libglu:    9.0.0-hf484d3e_1    
+    libopencv: 3.4.2-hb342d67_1    
+    libopus:   1.3-h7b6447c_0      
+    libvpx:    1.7.0-h439df22_0    
+    opencv:    3.4.2-py27h6fd60c2_1
+    py-opencv: 3.4.2-py27hb342d67_1
+
+The following packages will be UPDATED:
+
+    pytables:  3.4.4-py27h71ec239_0 --> 3.4.4-py27ha205bf6_0
+
+The following packages will be DOWNGRADED:
+
+    h5py:      2.9.0-py27h7918eee_0 --> 2.8.0-py27h989c5e5_3
+    hdf5:      1.10.4-hb1b8bf9_0    --> 1.10.2-hba1933b_1   
+
+Proceed ([y]/n)? y
+
+
+Downloading and Extracting Packages
+libvpx-1.7.0         | 2.4 MB    | ################################################################################################################################################################# | 100% 
+freeglut-3.0.0       | 251 KB    | ################################################################################################################################################################# | 100% 
+pytables-3.4.4       | 1.5 MB    | ################################################################################################################################################################# | 100% 
+libopencv-3.4.2      | 40.4 MB   | ################################################################################################################################################################# | 100% 
+libglu-9.0.0         | 377 KB    | ################################################################################################################################################################# | 100% 
+libopus-1.3          | 631 KB    | ############################################################################################################################################################### | 100% 
+jasper-2.0.14        | 1.1 MB    | ################################################################################################################################################################# | 100% 
+py-opencv-3.4.2      | 1.2 MB    | ################################################################################################################################################################# | 100% 
+opencv-3.4.2         | 11 KB     | ################################################################################################################################################################# | 100% 
+ffmpeg-4.0           | 73.7 MB   | ################################################################################################################################################################# | 100% 
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/faster_rcnn$ pip install easydict
+DEPRECATION: Python 2.7 will reach the end of its life on January 1st, 2020. Please upgrade your Python as Python 2.7 won't be maintained after that date. A future version of pip will drop support for Python 2.7.
+Collecting easydict
+  Downloading https://files.pythonhosted.org/packages/4c/c5/5757886c4f538c1b3f95f6745499a24bffa389a805dee92d093e2d9ba7db/easydict-1.9.tar.gz
+Building wheels for collected packages: easydict
+  Building wheel for easydict (setup.py) ... done
+  Stored in directory: /home/ubuntu/.cache/pip/wheels/9a/88/ec/085d92753646b0eda1b7df49c7afe51a6ecc496556d3012e2e
+Successfully built easydict
+Installing collected packages: easydict
+Successfully installed easydict-1.9
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/faster_rcnn$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/faster_rcnn$ conda install pytorch=0.4.1
+Solving environment: done
+
+
+==> WARNING: A newer version of conda exists. <==
+  current version: 4.5.12
+  latest version: 4.6.7
+
+Please update conda by running
+
+    $ conda update -n base -c defaults conda
+
+
+
+## Package Plan ##
+
+  environment location: /home/ubuntu/anaconda3/envs/pytorch_p27
+
+  added / updated specs: 
+    - pytorch=0.4.1
+
+
+The following packages will be downloaded:
+
+    package                    |            build
+    ---------------------------|-----------------
+    mkl_fft-1.0.6              |   py27h7dd41cf_0         148 KB
+    numpy-1.15.4               |   py27h1d66e8a_0          35 KB
+    mkl_random-1.0.1           |   py27h4414c95_1         361 KB
+    scipy-1.1.0                |   py27hfa4b5c9_1        17.9 MB
+    scikit-learn-0.20.1        |   py27h4989274_0         5.8 MB
+    numexpr-2.6.8              |   py27hd89afb7_0         188 KB
+    numpy-base-1.15.4          |   py27h81de0dd_0         4.2 MB
+    nccl-1.3.5                 |        cuda9.0_0         8.6 MB
+    mkl-service-1.1.2          |   py27h90e4bf4_5          11 KB
+    cudnn-7.3.1                |        cuda9.0_0       331.3 MB
+    pytorch-0.4.1              |   py27ha74772b_0       215.6 MB
+    cudatoolkit-9.0            |       h13b8566_0       340.4 MB
+    ------------------------------------------------------------
+                                           Total:       924.5 MB
+
+The following NEW packages will be INSTALLED:
+
+    cudatoolkit:  9.0-h13b8566_0                               
+    cudnn:        7.3.1-cuda9.0_0                              
+    nccl:         1.3.5-cuda9.0_0                              
+
+The following packages will be UPDATED:
+
+    mkl-service:  1.1.2-py27he904b0f_5                          --> 1.1.2-py27h90e4bf4_5 
+    numpy:        1.15.4-py27h7e9f1db_0                         --> 1.15.4-py27h1d66e8a_0
+    numpy-base:   1.15.4-py27hde5b4d6_0                         --> 1.15.4-py27h81de0dd_0
+
+The following packages will be DOWNGRADED:
+
+    mkl:          2019.1-144                                    --> 2018.0.3-1           
+    mkl_fft:      1.0.10-py27ha843d7b_0                         --> 1.0.6-py27h7dd41cf_0 
+    mkl_random:   1.0.2-py27hd81dba                          --> 1.0.1-py27h4414c95_1 
+    numexpr:      2.6.9-py27h9e4a6bb_0                          --> 2.6.8-py27hd89afb7_0 
+    pytorch:      1.0.0-py2.7_cuda10.0.130_cudnn7.4.1_1 pytorch [cuda100] --> 0.4.1-py27ha74772b_0 
+    scikit-learn: 0.20.2-py27hd81dba3_0                         --> 0.20.1-py27h4989274_0
+    scipy:        1.2.1-py27h7c811a0_0                          --> 1.1.0-py27hfa4b5c9_1 
+
+Proceed ([y]/n)? y
+
+
+Downloading and Extracting Packages
+mkl_fft-1.0.6        | 148 KB    | ################################################################################################################################################################# | 100% 
+numpy-1.15.4         | 35 KB     | ################################################################################################################################################################# | 100% 
+mkl_random-1.0.1     | 361 KB    | ################################################################################################################################################################# | 100% 
+scipy-1.1.0          | 17.9 MB   | ################################################################################################################################################################# | 100% 
+scikit-learn-0.20.1  | 5.8 MB    | ################################################################################################################################################################# | 100% 
+numexpr-2.6.8        | 188 KB    | ################################################################################################################################################################# | 100% 
+numpy-base-1.15.4    | 4.2 MB    | ################################################################################################################################################################# | 100% 
+nccl-1.3.5           | 8.6 MB    | ################################################################################################################################################################# | 100% 
+mkl-service-1.1.2    | 11 KB     | ################################################################################################################################################################# | 100% 
+cudnn-7.3.1          | 331.3 MB  | ################################################################################################################################################################# | 100% 
+pytorch-0.4.1        | 215.6 MB  | ################################################################################################################################################################# | 100% 
+cudatoolkit-9.0      | 340.4 MB  | ################################################################################################################################################################# | 100% 
+Preparing transaction: done
+Verifying transaction: done
+Executing transaction: done
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/faster_rcnn$ 
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/faster_rcnn$ ./make.sh 
+running build_ext
+skipping 'utils/bbox.c' Cython extension (up-to-date)
+skipping 'utils/nms.c' Cython extension (up-to-date)
+skipping 'nms/cpu_nms.c' Cython extension (up-to-date)
+skipping 'nms/gpu_nms.cpp' Cython extension (up-to-date)
+cythoning pycocotools/_mask.pyx to pycocotools/_mask.c
+error: [Errno 2] No such file or directory: '/home/ubuntu/hw2-release/faster_rcnn/pycocotools/_mask.pyx'
+Compiling roi pooling kernels by nvcc...
+/home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new
+Including CUDA code.
+generating /tmp/tmpOgrMSM/_roi_pooling.c
+setting the current directory to '/tmp/tmpOgrMSM'
+running build_ext
+building '_roi_pooling' extension
+creating home
+creating home/ubuntu
+creating home/ubuntu/hw2-release
+creating home/ubuntu/hw2-release/faster_rcnn
+creating home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new
+creating home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new/src
+gcc -pthread -B /home/ubuntu/anacond/pytorch_p27/compiler_compat -Wl,--sysroot=/ -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -std=c99 -fPIC -DWITH_CUDA -I/home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages/torch/utils/ffi/../../lib/include -I/home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages/torch/utils/ffi/../../lib/include/TH -I/home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages/torch/utils/ffi/../../lib/include/THC -I/usr/local/cuda/include -I/home/ubuntu/anaconda3/envs/pytorch_p27/include/python2.7 -c _roi_pooling.c -o ./_roi_pooling.o -std=c99
+gcc -pthread -B /home/ubuntu/anaconda3/envs/pytorch_p27/compiler_compat -Wl,--sysroot=/ -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -std=c99 -fPIC -DWITH_CUDA -I/home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages/torch/utils/ffi/../../lib/include -I/home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages/torch/utils/ffi/../../lib/include/TH -I/home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages/torch/utils/ffi/../../lib/include/THC -I/usr/local/cuda/include -I/home/ubuntu/anaconda3/envs/pytorch_p27/include/python2.7 -c /home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new/src/roi_pooling.c -o ./home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new/src/roi_pooling.o -std=c99
+gcc -pthread -B /home/ubuntu/anaconda3/envs/pytorch_p27/compiler_compat -Wl,--sysroot=/ -DNDEBUG -g -fwrapv -O3 -Wall -Wstrict-prototypes -std=c99 -fPIC -DWITH_CUDA -I/home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages/torch/utils/ffi/../../lib/include -I/home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages/torch/utils/ffi/../../lib/include/TH -I/home/ubuntu/anaconda3/envs/pytorch_p27/lib/python2.7/site-packages/torch/utils/ffi/../../lib/include/THC -I/usr/local/cuda/include -I/home/ubuntu/anaconda3/envs/pytorch_p27/include/python2.7 -c /home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new/src/roi_pooling_cuda.c -o ./home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new/src/roi_pooling_cuda.o -std=c99
+gcc -pthread -shared -B /home/ubuntu/anaconda3/envs/pytorch_p27/compiler_compat -L/home/ubuntu/anaconda3/envs/pytorch_p27/lib -Wl,-rpath=/home/ubuntu/anaconda3/envs/pytorch_p27/lib -Wl,--no-as-needed -Wl,--sysroot=/ -std=c99 ./_roi_pooling.o ./home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new/src/roi_pooling.o ./home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new/src/roi_pooling_cuda.o /home/ubuntu/hw2-release/faster_rcnn/roi_pooling_new/src/roi_pooling.cu.o -L/home/ubuntu/anaconda3/envs/pytorch_p27/lib -lpython2.7 -o ./_roi_pooling.so
+(pytorch_p27) ubuntu@ip-172-31-95-159:~/hw2-release/faster_rcnn$ 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
