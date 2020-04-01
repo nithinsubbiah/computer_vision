@@ -9,6 +9,8 @@ from PIL import Image
 import os
 import os.path
 import numpy as np
+import cPickle as pkl
+
 
 IMG_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.ppm', '.bmp', '.pgm']
 
@@ -31,9 +33,8 @@ def find_classes(imdb):
     #TODO: class_to_idx: dictionary with keys=classes and values=class index
     #If you did Task 0, you should know how to set these values from the imdb
 
-
-
-
+    classes = list(imdb.classes)
+    class_to_idx = imdb._class_to_ind
 
     return classes, class_to_idx
 
@@ -42,8 +43,11 @@ def make_dataset(imdb, class_to_idx):
     #TODO: return list of (image path, list(+ve class indices)) tuples
     #You will be using this in IMDBDataset
 
-
-
+    dataset_list = []
+    # class indices 1-20
+    for idx in range(len(imdb._image_index)):
+        annotation = imdb._load_pascal_annotation(imdb._image_index[idx])
+        dataset_list.append((imdb.image_path_from_index(imdb._image_index[idx]),annotation['gt_classes'].to_list()))
 
     return dataset_list
 
@@ -78,36 +82,42 @@ class LocalizerAlexNet(nn.Module):
         super(LocalizerAlexNet, self).__init__()
         #TODO: Define model
 
+        self.features = nn.Sequential(
+                            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=11, stride=4, padding=2),
+                            nn.ReLU(inplace=True),
+                            nn.MaxPool2d(kernel_size=3,stride=2,dilation=1,ceil_mode=False),
+                            nn.Conv2d(in_channels=64, out_channels=192, kernel_size=5, stride=1, padding=2),
+                            nn.ReLU(inplace=True),
+                            nn.MaxPool2d(kernel_size=3,stride=2,dilation=1,ceil_mode=False),
+                            nn.Conv2d(in_channels=192, out_channels=384, kernel_size=3, stride=1, padding=1),
+                            nn.ReLU(inplace=True),
+                            nn.Conv2d(in_channels=384, out_channels=256, kernel_size=3, stride=1, padding=1),
+                            nn.ReLU(inplace=True),
+                            nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+                            nn.ReLU(inplace=True)
+                        )
+        self.features.apply(self.init_weights)
 
+        self.classifier = nn.Sequential(
+                            nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1)),
+                            nn.ReLU(inplace=True),
+                            nn.Conv2d(256, 256, kernel_size=(1, 1), stride=(1, 1)),
+                            nn.ReLU(inplace=True),
+                            nn.Conv2d(256, 20, kernel_size=(1, 1), stride=(1, 1))
+                        )
+        self.classifier.apply(self.init_weights)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def init_weights(self, m):
+        if type(m) == nn.Conv2d:
+            nn.init.xavier_uniform(m.weight.data)
+            # nn.init.xavier_uniform(m.bias.data)
+ 
     def forward(self, x):
-        #TODO: Define forward pass
-
-
-
-
-
-
+        
+        x = self.features(x)
+        x = self.classifier(x)
 
         return x
-
-
-
 
 class LocalizerAlexNetHighres(nn.Module):
     def __init__(self, num_classes=20):
@@ -115,27 +125,11 @@ class LocalizerAlexNetHighres(nn.Module):
         #TODO: Ignore for now until instructed
 
 
-
-
-
-
-
-
-
     def forward(self, x):
         #TODO: Ignore for now until instructed
 
 
-
-
-
-
-
-
-
-
         return x
-
 
 
 def localizer_alexnet(pretrained=False, **kwargs):
@@ -148,19 +142,17 @@ def localizer_alexnet(pretrained=False, **kwargs):
     model = LocalizerAlexNet(**kwargs)
     #TODO: Initialize weights correctly based on whethet it is pretrained or
     # not
-
-
-
-
-
-
-
-
-
+    ###TODO: Check
+    if(pretrained):
+        if os.path.exists('pretrained_alexnet.pkl'):
+            model = pkl.load(open('pretrained_alexnet.pkl', 'rb'))
+        else:   
+            model = model_zoo.load_url(
+                'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth')
+            pkl.dump(pret_net, open('pretrained_alexnet.pkl', 'wb'),
+                    pkl.HIGHEST_PROTOCOL)
+        
     return model
-
-
-
 
 
 def localizer_alexnet_robust(pretrained=False, **kwargs):
@@ -173,17 +165,8 @@ def localizer_alexnet_robust(pretrained=False, **kwargs):
     model = LocalizerAlexNetRobust(**kwargs)
     #TODO: Ignore for now until instructed
 
-
-
-
-
-
-
-
     return model
-
-
-
+  
 
 class IMDBDataset(data.Dataset):
     """A dataloader that reads imagesfrom imdbs
@@ -226,18 +209,14 @@ class IMDBDataset(data.Dataset):
                                    (it can be a numpy array)
         """
         # TODO: Write this function, look at the imagenet code for inspiration
+        img_path, gt_classes = imgs[index]
+        img = Image.open(img_path)
+        img = self.transform(img)
+        #TODO: target_transform??
 
-
-
-
-
-
-
-
-
-
-
-
+        target = np.zeros(imdb.num_classes)
+        for idx in gt_classes:
+            target[idx-1] = 1
 
         return img, target
 

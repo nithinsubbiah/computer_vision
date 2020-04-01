@@ -136,14 +136,12 @@ def main():
 
     # TODO:
     # define loss function (criterion) and optimizer
-
-
-
-
-
-
-
-
+    #TODO: Different loss?
+    # criterion = nn.CrossEntropyLoss().cuda()
+    #TODO: Adam optimizer?
+    # optimizer = torch.optim.SGD(model.parameters(), args.lr,
+    #                             momentum=args.momentum,
+    #                             weight_decay=args.weight_decay)
 
     # optionally resume from a checkpoint
     if args.resume:
