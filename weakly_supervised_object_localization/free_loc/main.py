@@ -20,6 +20,7 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
 
+import visdom
 from tensorboardX import SummaryWriter
 
 from datasets.factory import get_imdb
@@ -124,7 +125,7 @@ def main():
     global args, best_prec1
     args = parser.parse_args()
     args.distributed = args.world_size > 1
-
+	
     # create model
     print("=> creating model '{}'".format(args.arch))
     if args.arch == 'localizer_alexnet':
@@ -203,10 +204,10 @@ def main():
     # TODO: Create loggers for visdom and tboard
     # TODO: You can pass the logger objects to train(), make appropriate
     # modifications to train()
-    if args.vis:
+    #if args.vis:
         # Update server here
-        visdom_logger = visdom.Visdom(server='ec2-18-218-85-198.us-east-2.compute.amazonaws.com',port='8097')
-        tboard_writer = SummaryWriter()
+    visdom_logger = visdom.Visdom(server='ec2-3-132-212-82.us-east-2.compute.amazonaws.com',port='8097')
+    tboard_writer = SummaryWriter()
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch)
@@ -258,7 +259,7 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
 
         #URGENT
         output = model(input_var)
-
+	imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
         # FIXME: output should be changed
         loss = criterion(imoutput, target_var)
         loss.backward()
@@ -296,8 +297,6 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         #TODO: Visualize things as mentioned in handout
         #TODO: Visualize at appropriate intervals
         
-
-
         # End of train()
 
 

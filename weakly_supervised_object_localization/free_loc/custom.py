@@ -47,7 +47,7 @@ def make_dataset(imdb, class_to_idx):
     # class indices 1-20
     for idx in range(len(imdb._image_index)):
         annotation = imdb._load_pascal_annotation(imdb._image_index[idx])
-        dataset_list.append((imdb.image_path_from_index(imdb._image_index[idx]),annotation['gt_classes'].to_list()))
+        dataset_list.append((imdb.image_path_from_index(imdb._image_index[idx]),annotation['gt_classes'].tolist()))
 
     return dataset_list
 
@@ -109,8 +109,8 @@ class LocalizerAlexNet(nn.Module):
 
     def init_weights(self, m):
         if type(m) == nn.Conv2d:
-            nn.init.xavier_uniform(m.weight.data)
-            # nn.init.xavier_uniform(m.bias.data)
+            nn.init.xavier_uniform_(m.weight.data)
+            #nn.init.xavier_uniform(m.bias.data)
  
     def forward(self, x):
         
@@ -145,13 +145,17 @@ def localizer_alexnet(pretrained=False, **kwargs):
     ###TODO: Check - wouldn't AlexNet have fc layers?
     if(pretrained):
         if os.path.exists('pretrained_alexnet.pkl'):
-            model = pkl.load(open('pretrained_alexnet.pkl', 'rb'))
+            pretrained_model = pkl.load(open('pretrained_alexnet.pkl', 'rb'))
         else:   
-            model = model_zoo.load_url(
+            pretrained_model = model_zoo.load_url(
                 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth')
             pkl.dump(pret_net, open('pretrained_alexnet.pkl', 'wb'),
                     pkl.HIGHEST_PROTOCOL)
-        
+    	idx_list = [0,3,6,8,10]
+	for idx in idx_list:
+	    model.features[idx].weight = pretrained_model['features.{}.weight'.format(idx)]
+	    model.features[idx].bias = pretrained_model['features.{}.bias'.format(idx)]
+    
     return model
 
 
@@ -209,12 +213,12 @@ class IMDBDataset(data.Dataset):
                                    (it can be a numpy array)
         """
         # TODO: Write this function, look at the imagenet code for inspiration
-        img_path, gt_classes = imgs[index]
+        img_path, gt_classes = self.imgs[index]
         img = Image.open(img_path)
         img = self.transform(img)
         #TODO: target_transform??
 
-        target = np.zeros(imdb.num_classes)
+        target = np.zeros(self.imdb.num_classes)
         for idx in gt_classes:
             target[idx-1] = 1
 

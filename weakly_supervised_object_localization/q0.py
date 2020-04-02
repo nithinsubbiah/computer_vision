@@ -5,7 +5,7 @@ import cv2
 import _init_paths
 from datasets.factory import get_imdb
 
-vis = visdom.Visdom(server='ec2-18-218-85-198.us-east-2.compute.amazonaws.com',port='8097')
+#vis = visdom.Visdom(server='ec2-18-218-85-198.us-east-2.compute.amazonaws.com',port='8097')
 
 imdb = get_imdb('voc_2007_trainval')
 
