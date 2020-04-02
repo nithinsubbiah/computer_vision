@@ -231,8 +231,6 @@ def main():
             }, is_best)
 
 
-
-
 #TODO: You can add input arguments if you wish
 def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboard_writer):
     batch_time = AverageMeter()
@@ -243,6 +241,8 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
 
     # switch to train mode
     model.train()
+
+    no_plotted = 0
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
@@ -257,10 +257,11 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         # TODO: Perform any necessary functions on the output
         # TODO: Compute loss using ``criterion``
 
-        #URGENT
         output = model(input_var)
-	imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
-        # FIXME: output should be changed
+        imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
+
+        # imoutput = F.sigmoid(imoutput)
+
         loss = criterion(imoutput, target_var)
         loss.backward()
 
@@ -296,6 +297,13 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
 
         #TODO: Visualize things as mentioned in handout
         #TODO: Visualize at appropriate intervals
+        tboard_writer.add_scalar('train/loss', loss.item(), i)
+
+        if((i+1)%75==0):
+            import pdb;pdb.set_trace()
+            # plot_idx = np.random.choice(input.shape[0])
+            # torch.where(target[plot_idx])
+            # tboard_writer.add_image('train/images'+str(epoch)+'_'+str(i), input[0])
         
         # End of train()
 
@@ -319,12 +327,8 @@ def validate(val_loader, model, criterion):
         # TODO: Perform any necessary functions on the output
         # TODO: Compute loss using ``criterion``
 
-
-
-
-
-
-
+        output = model(input_var)
+        imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
 
         # measure metrics and record loss
         m1 = metric1(imoutput.data, target)
