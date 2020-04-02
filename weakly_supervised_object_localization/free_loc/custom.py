@@ -142,7 +142,7 @@ def localizer_alexnet(pretrained=False, **kwargs):
     model = LocalizerAlexNet(**kwargs)
     #TODO: Initialize weights correctly based on whethet it is pretrained or
     # not
-    ###TODO: Check
+    ###TODO: Check - wouldn't AlexNet have fc layers?
     if(pretrained):
         if os.path.exists('pretrained_alexnet.pkl'):
             model = pkl.load(open('pretrained_alexnet.pkl', 'rb'))

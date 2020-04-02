@@ -20,6 +20,8 @@ import torchvision.transforms as transforms
 import torchvision.datasets as datasets
 import torchvision.models as models
 
+from tensorboardX import SummaryWriter
+
 from datasets.factory import get_imdb
 from custom import *
 
@@ -136,12 +138,10 @@ def main():
 
     # TODO:
     # define loss function (criterion) and optimizer
-    #TODO: Different loss?
-    # criterion = nn.CrossEntropyLoss().cuda()
-    #TODO: Adam optimizer?
-    # optimizer = torch.optim.SGD(model.parameters(), args.lr,
-    #                             momentum=args.momentum,
-    #                             weight_decay=args.weight_decay)
+    criterion = torch.nn.BCEWithLogitsLoss()
+    optimizer = torch.optim.SGD(model.parameters(), args.lr,
+                                momentum=args.momentum,
+                                weight_decay=args.weight_decay)
 
     # optionally resume from a checkpoint
     if args.resume:
@@ -204,19 +204,15 @@ def main():
     # TODO: You can pass the logger objects to train(), make appropriate
     # modifications to train()
     if args.vis:
-        import visdom
-
-
-
-
-
-
+        # Update server here
+        visdom_logger = visdom.Visdom(server='ec2-18-218-85-198.us-east-2.compute.amazonaws.com',port='8097')
+        tboard_writer = SummaryWriter()
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch)
 
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch)
+        train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboard_writer)
 
         # evaluate on validation set
         if epoch % args.eval_freq == 0 or epoch == args.epochs - 1:
@@ -237,7 +233,7 @@ def main():
 
 
 #TODO: You can add input arguments if you wish
-def train(train_loader, model, criterion, optimizer, epoch):
+def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboard_writer):
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
@@ -260,9 +256,12 @@ def train(train_loader, model, criterion, optimizer, epoch):
         # TODO: Perform any necessary functions on the output
         # TODO: Compute loss using ``criterion``
 
+        #URGENT
+        output = model(input_var)
 
-
-
+        # FIXME: output should be changed
+        loss = criterion(imoutput, target_var)
+        loss.backward()
 
         # measure metrics and record loss
         m1 = metric1(imoutput.data, target)
@@ -271,13 +270,8 @@ def train(train_loader, model, criterion, optimizer, epoch):
         avg_m1.update(m1[0], input.size(0))
         avg_m2.update(m2[0], input.size(0))
 
-        # TODO:
         # compute gradient and do SGD step
-
-
-
-
-
+        optimizer.step()
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -301,14 +295,7 @@ def train(train_loader, model, criterion, optimizer, epoch):
 
         #TODO: Visualize things as mentioned in handout
         #TODO: Visualize at appropriate intervals
-
-
-
-
-
-
-
-
+        
 
 
         # End of train()
