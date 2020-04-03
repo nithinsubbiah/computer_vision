@@ -119,6 +119,7 @@ parser.add_argument(
 parser.add_argument('--vis', action='store_true')
 
 best_prec1 = 0
+cnt = 0
 
 
 def main():
@@ -206,7 +207,7 @@ def main():
     # modifications to train()
     #if args.vis:
         # Update server here
-    visdom_logger = visdom.Visdom(server='ec2-3-132-212-82.us-east-2.compute.amazonaws.com',port='8097')
+    visdom_logger = visdom.Visdom(server='ec2-3-15-30-34.us-east-2.compute.amazonaws.com',port='8097')
     tboard_writer = SummaryWriter()
 
     for epoch in range(args.start_epoch, args.epochs):
@@ -238,7 +239,7 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
     losses = AverageMeter()
     avg_m1 = AverageMeter()
     avg_m2 = AverageMeter()
-
+    global cnt
     # switch to train mode
     model.train()
 
@@ -260,7 +261,7 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         output = model(input_var)
         imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
 
-        # imoutput = F.sigmoid(imoutput)
+        imoutput =torch.sigmoid(imoutput)
 
         loss = criterion(imoutput, target_var)
         loss.backward()
@@ -297,14 +298,22 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
 
         #TODO: Visualize things as mentioned in handout
         #TODO: Visualize at appropriate intervals
-        tboard_writer.add_scalar('train/loss', loss.item(), i)
+        tboard_writer.add_scalar('train/loss', loss.item(), cnt)
 
-        if((i+1)%75==0):
-            import pdb;pdb.set_trace()
-            # plot_idx = np.random.choice(input.shape[0])
-            # torch.where(target[plot_idx])
-            # tboard_writer.add_image('train/images'+str(epoch)+'_'+str(i), input[0])
-        
+        if((i+1)%75==0 and no_plotted<2):
+            plot_idx = np.random.choice(input.shape[0])
+	    gt_class = np.where(target[plot_idx]==1)[0][0]
+            heatmap = output[plot_idx][gt_class].data.cpu()
+	    heatmap = torch.unsqueeze(heatmap,0)
+        #    heatmap = transforms.functional.to_pil_image(heatmap)
+	#    heatmap = transforms.functional.resize(heatmap,(input[0].shape[1],input[0].shape[2]))
+	#    heatmap = transforms.functional.to_tensor(heatmap)
+            tboard_writer.add_image('images_'+str(epoch)+'_'+str(i), input[plot_idx])
+            tboard_writer.add_image('heatmap_'+str(epoch)+'_'+str(i), heatmap)
+            visdom_logger.image(input[plot_idx], opts=dict(title=str(epoch)+'_'+str(i)+'_image',store_history=True))
+            visdom_logger.image(heatmap, opts=dict(title=str(epoch)+'_'+str(i)+'_heatmap'+str(gt_class),store_history=True))
+            no_plotted+=1
+	cnt+=1
         # End of train()
 
 
@@ -330,6 +339,8 @@ def validate(val_loader, model, criterion):
         output = model(input_var)
         imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
 
+        imoutput = torch.sigmoid(imoutput)
+        loss = criterion(imoutput, target_var)
         # measure metrics and record loss
         m1 = metric1(imoutput.data, target)
         m2 = metric2(imoutput.data, target)
