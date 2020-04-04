@@ -126,6 +126,19 @@ def main():
     global args, best_prec1
     args = parser.parse_args()
     args.distributed = args.world_size > 1
+
+    seed = 1
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+    np.random.seed(seed)  # Numpy module.
+    random.seed(seed)  # Python random module.
+    torch.manual_seed(seed)
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+
+    def _init_fn(worker_id):
+        np.random.seed(int(seed)
 	
     # create model
     print("=> creating model '{}'".format(args.arch))
@@ -183,7 +196,8 @@ def main():
         shuffle=(train_sampler is None),
         num_workers=args.workers,
         pin_memory=True,
-        sampler=train_sampler)
+        sampler=train_sampler,
+        worker_init_fn=_init_fn)
 
     val_loader = torch.utils.data.DataLoader(
         IMDBDataset(
@@ -196,7 +210,8 @@ def main():
         batch_size=args.batch_size,
         shuffle=False,
         num_workers=args.workers,
-        pin_memory=True)
+        pin_memory=True,
+        worker_init_fn=_init_fn)
 
     if args.evaluate:
         validate(val_loader, model, criterion)
@@ -219,6 +234,10 @@ def main():
         # evaluate on validation set
         if epoch % args.eval_freq == 0 or epoch == args.epochs - 1:
             m1, m2 = validate(val_loader, model, criterion)
+            
+            tboard_writer.add_scalar('eval/metric1', m1, epoch)
+            tboard_writer.add_scalar('eval/metric2', m2, epoch)
+
             score = m1 * m2
             # remember best prec@1 and save checkpoint
             is_best = score > best_prec1
@@ -247,6 +266,7 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
     model.train()
 
     no_plotted = 0
+    plot_epoch = [1,15,30]
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
@@ -302,25 +322,28 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         #TODO: Visualize things as mentioned in handout
         #TODO: Visualize at appropriate intervals
         tboard_writer.add_scalar('train/loss', loss.item(), cnt)
+        tboard_writer.add_scalar('train/metric1', m1, cnt)
+        tboard_writer.add_scalar('train/metric2', m2, cnt)
 
-        if((i+1)%75==0 and no_plotted<2):
-            plot_idx = np.random.choice(input.shape[0])
-	    gt_class = np.where(target[plot_idx]==1)[0][0]
+        if epoch in plot_epoch:
+            if((i+1)%75==0 and no_plotted<2):
+                plot_idx = np.random.choice(input.shape[0])
+                gt_class = np.where(target[plot_idx]==1)[0][0]
 
-            heatmap = output[plot_idx][gt_class].data.cpu().numpy()	    
-	    img_plot = input[plot_idx].data.numpy()
+                heatmap = output[plot_idx][gt_class].data.cpu().numpy()	    
+                img_plot = input[plot_idx].data.numpy()
 
-	    img_plot = (img_plot-np.min(img_plot))*255/(np.max(img_plot)-np.min(img_plot))
-	    img_plot = img_plot.astype(np.uint8) 
-            
-	    visdom_logger.image(img_plot, opts=dict(title=str(epoch)+'_'+str(i)+'_image',store_history=True))
-            visdom_logger.heatmap(heatmap, opts=dict(title=str(epoch)+'_'+str(i)+'_heatmap'+str(gt_class),store_history=True))
-	    tboard_writer.add_image('images_'+str(epoch)+'_'+str(i), img_plot)
-	    heatmap = (heatmap-np.min(heatmap))*255/(np.max(heatmap)-np.min(heatmap))
-	    heatmap = np.expand_dims(heatmap,axis=0)
-            tboard_writer.add_image('heatmap_'+str(epoch)+'_'+str(i), heatmap)
-            
-	    no_plotted+=1
+                img_plot = (img_plot-np.min(img_plot))*255/(np.max(img_plot)-np.min(img_plot))
+                img_plot = img_plot.astype(np.uint8) 
+                
+                visdom_logger.image(img_plot, opts=dict(title='train/image_'+str(epoch)+'_'+str(i),store_history=True))
+                visdom_logger.heatmap(heatmap, opts=dict(title='train/heatmap_'+str(epoch)+'_'+str(i)+str(gt_class),store_history=True))
+                tboard_writer.add_image('train/images_'+str(epoch)+'_'+str(i), img_plot)
+                heatmap = (heatmap-np.min(heatmap))*255/(np.max(heatmap)-np.min(heatmap))
+                heatmap = np.expand_dims(heatmap,axis=0)
+                tboard_writer.add_image('train/heatmap_'+str(epoch)+'_'+str(i), heatmap)
+                
+                no_plotted+=1
 	cnt+=1
         # End of train()
 
@@ -333,6 +356,8 @@ def validate(val_loader, model, criterion):
 
     # switch to evaluate mode
     model.eval()
+
+    no_plotted = 0
 
     end = time.time()
     for i, (input, target) in enumerate(val_loader):
@@ -373,13 +398,26 @@ def validate(val_loader, model, criterion):
                       avg_m1=avg_m1,
                       avg_m2=avg_m2))
 
-        #TODO: Visualize things as mentioned in handout
-        #TODO: Visualize at appropriate intervals
+        # tboard_writer.add_scalar('eval/loss', loss.item(), cnt)
 
+        if(no_plotted<1):
+            plot_idx = np.random.choice(input.shape[0])
+            gt_class = np.where(target[plot_idx]==1)[0][0]
 
+            heatmap = output[plot_idx][gt_class].data.cpu().numpy()	    
+            img_plot = input[plot_idx].data.numpy()
 
-
-
+            img_plot = (img_plot-np.min(img_plot))*255/(np.max(img_plot)-np.min(img_plot))
+            img_plot = img_plot.astype(np.uint8) 
+            
+            visdom_logger.image(img_plot, opts=dict(title='eval/image_'+str(epoch)+'_'+str(i),store_history=True))
+            visdom_logger.heatmap(heatmap, opts=dict(title='eval/heatmap_'+str(epoch)+'_'+str(i)+str(gt_class),store_history=True))
+            # tboard_writer.add_image('eval/images_'+str(epoch)+'_'+str(i), img_plot)
+            # heatmap = (heatmap-np.min(heatmap))*255/(np.max(heatmap)-np.min(heatmap))
+            # heatmap = np.expand_dims(heatmap,axis=0)
+            # tboard_writer.add_image('eval/heatmap_'+str(epoch)+'_'+str(i), heatmap)
+            
+            no_plotted+=1
 
     print(' * Metric1 {avg_m1.avg:.3f} Metric2 {avg_m2.avg:.3f}'.format(
         avg_m1=avg_m1, avg_m2=avg_m2))
@@ -422,12 +460,14 @@ def adjust_learning_rate(optimizer, epoch):
 
 def metric1(output, target):
     # TODO: Ignore for now - proceed till instructed
-    return [0]
+    metric1_score = sklearn.metrics.f1_score(target,output, average='micro')
+    return metric1_score
 
 
 def metric2(output, target):
     #TODO: Ignore for now - proceed till instructed
-    return [0]
+    metric2_score = sklearn.metrics.average_precision_score(target,output,average='micro')
+    return metric2_score
 
 
 if __name__ == '__main__':
