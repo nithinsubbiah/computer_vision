@@ -207,8 +207,8 @@ def main():
     # modifications to train()
     #if args.vis:
         # Update server here
-    visdom_logger = visdom.Visdom(server='ec2-3-15-30-34.us-east-2.compute.amazonaws.com',port='8097')
-    tboard_writer = SummaryWriter()
+    visdom_logger = visdom.Visdom(server='ec2-18-224-137-246.us-east-2.compute.amazonaws.com',port='8097')
+    tboard_writer = SummaryWriter(flush_secs=1)
 
     for epoch in range(args.start_epoch, args.epochs):
         adjust_learning_rate(optimizer, epoch)
@@ -234,12 +234,15 @@ def main():
 
 #TODO: You can add input arguments if you wish
 def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboard_writer):
+    
+    global cnt
+
     batch_time = AverageMeter()
     data_time = AverageMeter()
     losses = AverageMeter()
     avg_m1 = AverageMeter()
     avg_m2 = AverageMeter()
-    global cnt
+    
     # switch to train mode
     model.train()
 
