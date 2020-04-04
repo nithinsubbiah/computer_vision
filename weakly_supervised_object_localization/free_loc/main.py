@@ -207,7 +207,7 @@ def main():
     # modifications to train()
     #if args.vis:
         # Update server here
-    visdom_logger = visdom.Visdom(server='ec2-18-224-137-246.us-east-2.compute.amazonaws.com',port='8097')
+    visdom_logger = visdom.Visdom(server='ec2-18-188-234-89.us-east-2.compute.amazonaws.com',port='8097')
     tboard_writer = SummaryWriter(flush_secs=1)
 
     for epoch in range(args.start_epoch, args.epochs):
@@ -306,16 +306,21 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         if((i+1)%75==0 and no_plotted<2):
             plot_idx = np.random.choice(input.shape[0])
 	    gt_class = np.where(target[plot_idx]==1)[0][0]
-            heatmap = output[plot_idx][gt_class].data.cpu()
-	    heatmap = torch.unsqueeze(heatmap,0)
-        #    heatmap = transforms.functional.to_pil_image(heatmap)
-	#    heatmap = transforms.functional.resize(heatmap,(input[0].shape[1],input[0].shape[2]))
-	#    heatmap = transforms.functional.to_tensor(heatmap)
-            tboard_writer.add_image('images_'+str(epoch)+'_'+str(i), input[plot_idx])
+
+            heatmap = output[plot_idx][gt_class].data.cpu().numpy()	    
+	    img_plot = input[plot_idx].data.numpy()
+
+	    img_plot = (img_plot-np.min(img_plot))*255/(np.max(img_plot)-np.min(img_plot))
+	    img_plot = img_plot.astype(np.uint8) 
+            
+	    visdom_logger.image(img_plot, opts=dict(title=str(epoch)+'_'+str(i)+'_image',store_history=True))
+            visdom_logger.heatmap(heatmap, opts=dict(title=str(epoch)+'_'+str(i)+'_heatmap'+str(gt_class),store_history=True))
+	    tboard_writer.add_image('images_'+str(epoch)+'_'+str(i), img_plot)
+	    heatmap = (heatmap-np.min(heatmap))*255/(np.max(heatmap)-np.min(heatmap))
+	    heatmap = np.expand_dims(heatmap,axis=0)
             tboard_writer.add_image('heatmap_'+str(epoch)+'_'+str(i), heatmap)
-            visdom_logger.image(input[plot_idx], opts=dict(title=str(epoch)+'_'+str(i)+'_image',store_history=True))
-            visdom_logger.image(heatmap, opts=dict(title=str(epoch)+'_'+str(i)+'_heatmap'+str(gt_class),store_history=True))
-            no_plotted+=1
+            
+	    no_plotted+=1
 	cnt+=1
         # End of train()
 
