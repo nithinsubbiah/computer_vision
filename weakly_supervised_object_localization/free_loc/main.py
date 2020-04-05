@@ -460,14 +460,27 @@ def adjust_learning_rate(optimizer, epoch):
 
 def metric1(output, target):
     # TODO: Ignore for now - proceed till instructed
-    import pdb;pdb.set_trace()
+    output = np.round(output)
     metric1_score = sklearn.metrics.f1_score(target,output, average='macro')
     return metric1_score
 
 
 def metric2(output, target):
     #TODO: Ignore for now - proceed till instructed
-    metric2_score = sklearn.metrics.average_precision_score(target,output,average='macro')
+
+    nclasses = target.shape[1]
+    AP = []
+    for cid in range(nclasses):
+        target_cls = target[:, cid].astype('float32')
+        output_cls = output[:, cid].astype('float32')
+        # As per PhilK. code:
+        # https://github.com/philkr/voc-classification/blob/master/src/train_cls.py
+        output_cls -= 1e-5 * target_cls
+        ap = sklearn.metrics.average_precision_score(
+            target_cls, output_cls)
+        AP.append(ap)
+    metric2_score = np.mean(AP)
+
     return metric2_score
 
 
