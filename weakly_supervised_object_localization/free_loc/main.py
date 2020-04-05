@@ -3,6 +3,7 @@ import os
 import shutil
 import time
 import sys
+import math
 sys.path.insert(0, 'faster_rcnn')
 import sklearn
 import sklearn.metrics
@@ -126,7 +127,6 @@ def main():
     global args, best_prec1
     args = parser.parse_args()
     args.distributed = args.world_size > 1
-
     seed = 1
     torch.manual_seed(seed)
     torch.cuda.manual_seed(seed)
@@ -222,7 +222,7 @@ def main():
     # modifications to train()
     #if args.vis:
         # Update server here
-    visdom_logger = visdom.Visdom(server='ec2-18-188-234-89.us-east-2.compute.amazonaws.com',port='8097')
+    visdom_logger = visdom.Visdom(server='ec2-18-191-177-251.us-east-2.compute.amazonaws.com',port='8097')
     tboard_writer = SummaryWriter(flush_secs=1)
 
     for epoch in range(args.start_epoch, args.epochs):
@@ -233,7 +233,7 @@ def main():
 
         # evaluate on validation set
         if epoch % args.eval_freq == 0 or epoch == args.epochs - 1:
-            m1, m2 = validate(val_loader, model, criterion)
+            m1, m2 = validate(val_loader, model, criterion, visdom_logger, epoch)
             
             tboard_writer.add_scalar('eval/metric1', m1, epoch)
             tboard_writer.add_scalar('eval/metric2', m2, epoch)
@@ -293,8 +293,8 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         m1 = metric1(imoutput.data, target)
         m2 = metric2(imoutput.data, target)
         losses.update(loss.data[0], input.size(0))
-        avg_m1.update(m1[0], input.size(0))
-        avg_m2.update(m2[0], input.size(0))
+	avg_m1.update(m1, input.size(0))
+        avg_m2.update(m2, input.size(0))
 
         # compute gradient and do SGD step
         optimizer.step()
@@ -348,7 +348,7 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         # End of train()
 
 
-def validate(val_loader, model, criterion):
+def validate(val_loader, model, criterion, visdom_logger, epoch):
     batch_time = AverageMeter()
     losses = AverageMeter()
     avg_m1 = AverageMeter()
@@ -378,8 +378,8 @@ def validate(val_loader, model, criterion):
         m1 = metric1(imoutput.data, target)
         m2 = metric2(imoutput.data, target)
         losses.update(loss.data[0], input.size(0))
-        avg_m1.update(m1[0], input.size(0))
-        avg_m2.update(m2[0], input.size(0))
+        avg_m1.update(m1, input.size(0))
+        avg_m2.update(m2, input.size(0))
 
         # measure elapsed time
         batch_time.update(time.time() - end)
@@ -460,14 +460,18 @@ def adjust_learning_rate(optimizer, epoch):
 
 def metric1(output, target):
     # TODO: Ignore for now - proceed till instructed
+    output = output.data.cpu().numpy()
     output = np.round(output)
+    target = target.data.cpu().numpy()
     metric1_score = sklearn.metrics.f1_score(target,output, average='macro')
     return metric1_score
 
 
 def metric2(output, target):
     #TODO: Ignore for now - proceed till instructed
-
+    
+    output = output.cpu().numpy()
+    target = target.cpu().numpy()
     nclasses = target.shape[1]
     AP = []
     for cid in range(nclasses):
@@ -478,9 +482,11 @@ def metric2(output, target):
         output_cls -= 1e-5 * target_cls
         ap = sklearn.metrics.average_precision_score(
             target_cls, output_cls)
-        AP.append(ap)
+        if math.isnan(ap):
+	    ap=0
+	AP.append(ap)
     metric2_score = np.mean(AP)
-
+    
     return metric2_score
 
 

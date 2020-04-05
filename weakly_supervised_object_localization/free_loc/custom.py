@@ -149,7 +149,7 @@ def localizer_alexnet(pretrained=False, **kwargs):
         else:   
             pretrained_model = model_zoo.load_url(
                 'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth')
-            pkl.dump(pret_net, open('pretrained_alexnet.pkl', 'wb'),
+            pkl.dump(pretrained_model, open('pretrained_alexnet.pkl', 'wb'),
                     pkl.HIGHEST_PROTOCOL)
     	idx_list = [0,3,6,8,10]
 	for idx in idx_list:
