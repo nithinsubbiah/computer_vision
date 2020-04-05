@@ -132,13 +132,13 @@ def main():
     torch.cuda.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
     np.random.seed(seed)  # Numpy module.
-    random.seed(seed)  # Python random module.
+    #random.seed(seed)  # Python random module.
     torch.manual_seed(seed)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
 
     def _init_fn(worker_id):
-        np.random.seed(int(seed)
+       np.random.seed(int(seed))
 	
     # create model
     print("=> creating model '{}'".format(args.arch))
@@ -460,13 +460,14 @@ def adjust_learning_rate(optimizer, epoch):
 
 def metric1(output, target):
     # TODO: Ignore for now - proceed till instructed
-    metric1_score = sklearn.metrics.f1_score(target,output, average='micro')
+    import pdb;pdb.set_trace()
+    metric1_score = sklearn.metrics.f1_score(target,output, average='macro')
     return metric1_score
 
 
 def metric2(output, target):
     #TODO: Ignore for now - proceed till instructed
-    metric2_score = sklearn.metrics.average_precision_score(target,output,average='micro')
+    metric2_score = sklearn.metrics.average_precision_score(target,output,average='macro')
     return metric2_score
 
 
