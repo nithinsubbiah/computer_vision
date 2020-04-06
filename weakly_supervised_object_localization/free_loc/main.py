@@ -154,11 +154,11 @@ def main():
     # TODO:
     # define loss function (criterion) and optimizer
     criterion = torch.nn.BCEWithLogitsLoss()
-    # optimizer = torch.optim.SGD(model.parameters(), args.lr,
-    #                             momentum=args.momentum,
-    #                             weight_decay=args.weight_decay)
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
+    optimizer = torch.optim.SGD(model.parameters(), args.lr,
+                                 momentum=args.momentum,
+                                 weight_decay=args.weight_decay)
+    #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -227,10 +227,10 @@ def main():
     tboard_writer = SummaryWriter(flush_secs=1)
 
     for epoch in range(args.start_epoch, args.epochs):
-        # adjust_learning_rate(optimizer, epoch)
+        adjust_learning_rate(optimizer, epoch)
 
         # train for one epoch
-        train(train_loader, model, criterion, optimizer,scheduler, epoch, visdom_logger, tboard_writer)
+        train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboard_writer)
 
         # evaluate on validation set
         if epoch % args.eval_freq == 0 or epoch == args.epochs - 1:
@@ -253,7 +253,7 @@ def main():
 
 
 #TODO: You can add input arguments if you wish
-def train(train_loader, model, criterion, optimizer, scheduler, epoch, visdom_logger, tboard_writer):
+def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboard_writer):
     
     global cnt
 
@@ -283,9 +283,8 @@ def train(train_loader, model, criterion, optimizer, scheduler, epoch, visdom_lo
         # TODO: Compute loss using ``criterion``
         optimizer.zero_grad()
         output = model(input_var)
-        imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
-
-        imoutput =torch.sigmoid(imoutput)
+        imoutput =torch.sigmoid(output)
+        imoutput = torch.squeeze(F.max_pool2d(imoutput,imoutput.shape[2]))
 
         loss = criterion(imoutput, target_var)
         loss.backward()
@@ -299,7 +298,7 @@ def train(train_loader, model, criterion, optimizer, scheduler, epoch, visdom_lo
 
         # compute gradient and do SGD step
         optimizer.step()
-        scheduler.step()
+        #scheduler.step()
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
@@ -454,7 +453,7 @@ class AverageMeter(object):
 
 def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    lr = args.lr * (0.1**(epoch // 2))
+    lr = args.lr * (0.1**(epoch // 30))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
