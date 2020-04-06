@@ -223,7 +223,7 @@ def main():
     # modifications to train()
     #if args.vis:
         # Update server here
-    visdom_logger = visdom.Visdom(server='ec2-18-219-199-106.us-east-2.compute.amazonaws.com',port='8097')
+    visdom_logger = visdom.Visdom(server='ec2-3-21-156-5.us-east-2.compute.amazonaws.com',port='8097')
     tboard_writer = SummaryWriter(flush_secs=1)
 
     for epoch in range(args.start_epoch, args.epochs):
