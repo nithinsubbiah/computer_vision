@@ -157,7 +157,8 @@ def main():
     optimizer = torch.optim.SGD(model.parameters(), args.lr,
                                 momentum=args.momentum,
                                 weight_decay=args.weight_decay)
-
+    #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -222,7 +223,7 @@ def main():
     # modifications to train()
     #if args.vis:
         # Update server here
-    visdom_logger = visdom.Visdom(server='ec2-18-191-177-251.us-east-2.compute.amazonaws.com',port='8097')
+    visdom_logger = visdom.Visdom(server='ec2-18-219-199-106.us-east-2.compute.amazonaws.com',port='8097')
     tboard_writer = SummaryWriter(flush_secs=1)
 
     for epoch in range(args.start_epoch, args.epochs):
@@ -280,7 +281,7 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         # TODO: Get output from model
         # TODO: Perform any necessary functions on the output
         # TODO: Compute loss using ``criterion``
-
+	optimizer.zero_grad()
         output = model(input_var)
         imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
 
@@ -453,7 +454,7 @@ class AverageMeter(object):
 
 def adjust_learning_rate(optimizer, epoch):
     """Sets the learning rate to the initial LR decayed by 10 every 30 epochs"""
-    lr = args.lr * (0.1**(epoch // 30))
+    lr = args.lr * (0.1**(epoch // 2))
     for param_group in optimizer.param_groups:
         param_group['lr'] = lr
 
