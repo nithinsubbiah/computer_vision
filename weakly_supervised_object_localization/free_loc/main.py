@@ -154,11 +154,11 @@ def main():
     # TODO:
     # define loss function (criterion) and optimizer
     criterion = torch.nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.SGD(model.parameters(), args.lr,
-                                momentum=args.momentum,
-                                weight_decay=args.weight_decay)
-    #optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
-    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=2, gamma=0.1)
+    # optimizer = torch.optim.SGD(model.parameters(), args.lr,
+    #                             momentum=args.momentum,
+    #                             weight_decay=args.weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.1)
     # optionally resume from a checkpoint
     if args.resume:
         if os.path.isfile(args.resume):
@@ -227,10 +227,10 @@ def main():
     tboard_writer = SummaryWriter(flush_secs=1)
 
     for epoch in range(args.start_epoch, args.epochs):
-        adjust_learning_rate(optimizer, epoch)
+        # adjust_learning_rate(optimizer, epoch)
 
         # train for one epoch
-        train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboard_writer)
+        train(train_loader, model, criterion, optimizer,scheduler, epoch, visdom_logger, tboard_writer)
 
         # evaluate on validation set
         if epoch % args.eval_freq == 0 or epoch == args.epochs - 1:
@@ -253,7 +253,7 @@ def main():
 
 
 #TODO: You can add input arguments if you wish
-def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboard_writer):
+def train(train_loader, model, criterion, optimizer, scheduler, epoch, visdom_logger, tboard_writer):
     
     global cnt
 
@@ -281,7 +281,7 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         # TODO: Get output from model
         # TODO: Perform any necessary functions on the output
         # TODO: Compute loss using ``criterion``
-	optimizer.zero_grad()
+        optimizer.zero_grad()
         output = model(input_var)
         imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
 
@@ -294,12 +294,12 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         m1 = metric1(imoutput.data, target)
         m2 = metric2(imoutput.data, target)
         losses.update(loss.data[0], input.size(0))
-	avg_m1.update(m1, input.size(0))
+        avg_m1.update(m1, input.size(0))
         avg_m2.update(m2, input.size(0))
 
         # compute gradient and do SGD step
         optimizer.step()
-
+        scheduler.step()
         # measure elapsed time
         batch_time.update(time.time() - end)
         end = time.time()
@@ -461,12 +461,26 @@ def adjust_learning_rate(optimizer, epoch):
 
 def metric1(output, target):
     # TODO: Ignore for now - proceed till instructed
-    output = output.data.cpu().numpy()
-    output = np.round(output)
-    target = target.data.cpu().numpy()
-    metric1_score = sklearn.metrics.f1_score(target,output, average='macro')
-    return metric1_score
 
+    output = output.cpu().numpy()
+    target = target.cpu().numpy()
+    nclasses = target.shape[1]
+    F1 = []
+    for cid in range(nclasses):
+        target_cls = target[:, cid].astype('float32')
+        output_cls = output[:, cid].astype('float32')
+        output_cls[output_cls>=0.7] = 1
+        output_cls[output_cls<0.7] = 0
+        # As per PhilK. code:
+        # https://github.com/philkr/voc-classification/blob/master/src/train_cls.py
+        # output_cls -= 1e-5 * target_cls
+        f1 = sklearn.metrics.f1_score(target_cls, output_cls,average='binary')
+        if math.isnan(f1):
+            f1=0
+	F1.append(f1)
+    metric1_score = np.mean(F1)
+    ###
+    return metric1_score
 
 def metric2(output, target):
     #TODO: Ignore for now - proceed till instructed
