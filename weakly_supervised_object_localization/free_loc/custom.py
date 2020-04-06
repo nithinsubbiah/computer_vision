@@ -166,11 +166,22 @@ def localizer_alexnet_robust(pretrained=False, **kwargs):
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = LocalizerAlexNetRobust(**kwargs)
+    model = LocalizerAlexNet(**kwargs)
     #TODO: Ignore for now until instructed
-
-    return model
-  
+    if(pretrained):
+        if os.path.exists('pretrained_alexnet.pkl'):
+            pretrained_model = pkl.load(open('pretrained_alexnet.pkl', 'rb'))
+        else:   
+            pretrained_model = model_zoo.load_url(
+                'https://download.pytorch.org/models/alexnet-owt-4df8aa71.pth')
+            pkl.dump(pretrained_model, open('pretrained_alexnet.pkl', 'wb'),
+                    pkl.HIGHEST_PROTOCOL)
+    	idx_list = [0,3,6,8,10]
+	for idx in idx_list:
+	    model.features[idx].weight = pretrained_model['features.{}.weight'.format(idx)]
+	    model.features[idx].bias = pretrained_model['features.{}.bias'.format(idx)]
+    
+    return model  
 
 class IMDBDataset(data.Dataset):
     """A dataloader that reads imagesfrom imdbs

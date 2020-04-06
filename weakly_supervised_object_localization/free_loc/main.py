@@ -283,8 +283,11 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
         # TODO: Compute loss using ``criterion``
         optimizer.zero_grad()
         output = model(input_var)
-        imoutput =torch.sigmoid(output)
-        imoutput = torch.squeeze(F.max_pool2d(imoutput,imoutput.shape[2]))
+        # imoutput =torch.sigmoid(output)
+        if args.arch == 'localizer_alexnet':
+            imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
+        elif args.arch == 'localizer_alexnet_robust':
+            imoutput = torch.squeeze(F.avg_pool2d(output,output.shape[2]))
 
         loss = criterion(imoutput, target_var)
         loss.backward()
@@ -371,8 +374,7 @@ def validate(val_loader, model, criterion, visdom_logger, epoch):
 
         output = model(input_var)
         imoutput = torch.squeeze(F.max_pool2d(output,output.shape[2]))
-
-        imoutput = torch.sigmoid(imoutput)
+        # imoutput = torch.sigmoid(imoutput)
         loss = criterion(imoutput, target_var)
         # measure metrics and record loss
         m1 = metric1(imoutput.data, target)
@@ -460,6 +462,7 @@ def adjust_learning_rate(optimizer, epoch):
 
 def metric1(output, target):
     # TODO: Ignore for now - proceed till instructed
+    output = torch.sigmoid(output)
 
     output = output.cpu().numpy()
     target = target.cpu().numpy()
@@ -483,7 +486,7 @@ def metric1(output, target):
 
 def metric2(output, target):
     #TODO: Ignore for now - proceed till instructed
-    
+    output = torch.sigmoid(output)
     output = output.cpu().numpy()
     target = target.cpu().numpy()
     nclasses = target.shape[1]
