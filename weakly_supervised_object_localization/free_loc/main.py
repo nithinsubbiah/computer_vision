@@ -116,6 +116,10 @@ parser.add_argument(
     type=str,
     help='url used to set up distributed training')
 parser.add_argument(
+    '--ip',
+    type=str,
+    help='Amazon EC2 public IP for visdom')
+parser.add_argument(
     '--dist-backend', default='gloo', type=str, help='distributed backend')
 parser.add_argument('--vis', action='store_true')
 
@@ -223,7 +227,7 @@ def main():
     # modifications to train()
     #if args.vis:
         # Update server here
-    visdom_logger = visdom.Visdom(server='ec2-3-21-156-5.us-east-2.compute.amazonaws.com',port='8097')
+    visdom_logger = visdom.Visdom(server=args.ip,port='8097')
     tboard_writer = SummaryWriter(flush_secs=1)
 
     for epoch in range(args.start_epoch, args.epochs):
