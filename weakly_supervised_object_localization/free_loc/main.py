@@ -273,7 +273,7 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
     model.train()
 
     no_plotted = 0
-    plot_epoch = [0,15,29]
+    plot_epoch = [0,15,29,44]
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
