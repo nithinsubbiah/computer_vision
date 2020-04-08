@@ -131,18 +131,18 @@ def main():
     global args, best_prec1
     args = parser.parse_args()
     args.distributed = args.world_size > 1
-    seed = 1
-    torch.manual_seed(seed)
-    torch.cuda.manual_seed(seed)
-    torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
-    np.random.seed(seed)  # Numpy module.
-    #random.seed(seed)  # Python random module.
-    torch.manual_seed(seed)
-    torch.backends.cudnn.benchmark = False
-    torch.backends.cudnn.deterministic = True
+    # seed = 1
+    # torch.manual_seed(seed)
+    # torch.cuda.manual_seed(seed)
+    # torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+    # np.random.seed(seed)  # Numpy module.
+    # #random.seed(seed)  # Python random module.
+    # torch.manual_seed(seed)
+    # torch.backends.cudnn.benchmark = False
+    # torch.backends.cudnn.deterministic = True
 
-    def _init_fn(worker_id):
-       np.random.seed(int(seed))
+    # def _init_fn(worker_id):
+    #    np.random.seed(int(seed))
 	
     # create model
     print("=> creating model '{}'".format(args.arch))
@@ -198,11 +198,13 @@ def main():
     train_loader = torch.utils.data.DataLoader(
         train_dataset,
         batch_size=args.batch_size,
-        shuffle=(train_sampler is None),
+        shuffle=(False),
+        # shuffle=(train_sampler is None),
         num_workers=args.workers,
         pin_memory=True,
-        sampler=train_sampler,
-        worker_init_fn=_init_fn)
+        sampler=torch.utils.data.SequentialSampler(train_dataset))
+        # sampler=train_sampler,
+        # worker_init_fn=_init_fn)
 
     val_loader = torch.utils.data.DataLoader(
         IMDBDataset(
@@ -215,8 +217,8 @@ def main():
         batch_size=args.batch_size,
         shuffle=False,
         num_workers=args.workers,
-        pin_memory=True,
-        worker_init_fn=_init_fn)
+        pin_memory=True)
+        # worker_init_fn=_init_fn)
 
     if args.evaluate:
         validate(val_loader, model, criterion)
