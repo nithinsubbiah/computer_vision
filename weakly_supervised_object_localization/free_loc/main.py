@@ -273,7 +273,7 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
     model.train()
 
     no_plotted = 0
-    plot_epoch = [1,15,30]
+    plot_epoch = [0,15,29]
 
     end = time.time()
     for i, (input, target) in enumerate(train_loader):
@@ -336,7 +336,8 @@ def train(train_loader, model, criterion, optimizer, epoch, visdom_logger, tboar
 
         if epoch in plot_epoch:
             if((i+1)%75==0 and no_plotted<2):
-                plot_idx = np.random.choice(input.shape[0])
+                #plot_idx = np.random.choice(input.shape[0])
+                plot_idx = 0
                 gt_class = np.where(target[plot_idx]==1)[0][0]
 
                 heatmap = output[plot_idx][gt_class].data.cpu().numpy()	    
@@ -420,10 +421,6 @@ def validate(val_loader, model, criterion, visdom_logger, epoch):
             
             visdom_logger.image(img_plot, opts=dict(title='eval/image_'+str(epoch)+'_'+str(i),store_history=True))
             visdom_logger.heatmap(heatmap, opts=dict(title='eval/heatmap_'+str(epoch)+'_'+str(i)+str(gt_class),store_history=True))
-            # tboard_writer.add_image('eval/images_'+str(epoch)+'_'+str(i), img_plot)
-            # heatmap = (heatmap-np.min(heatmap))*255/(np.max(heatmap)-np.min(heatmap))
-            # heatmap = np.expand_dims(heatmap,axis=0)
-            # tboard_writer.add_image('eval/heatmap_'+str(epoch)+'_'+str(i), heatmap)
             
             no_plotted+=1
 
