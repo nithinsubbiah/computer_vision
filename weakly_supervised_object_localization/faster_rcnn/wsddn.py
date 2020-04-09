@@ -74,6 +74,7 @@ class WSDDN(nn.Module):
         self.classifier = nn.Sequential(
             nn.Linear(in_features=12544, out_features=4096),
             nn.ReLU(inplace=True),
+            nn.Dropout(p=0.5),
             nn.Linear(in_features=4096, out_features=4096),
             nn.ReLU(inplace=True)
         )
@@ -142,7 +143,7 @@ class WSDDN(nn.Module):
         #TODO: Compute the appropriate loss using the cls_prob that is the
         #output of forward()
         #Checkout forward() to see how it is called 
-        bceloss = F.binary_cross_entropy(torch.sum(cls_prob,dim=0),label_vec,size_average=False)
+        bceloss = F.binary_cross_entropy_with_logits(torch.sum(cls_prob,dim=0),label_vec,size_average=False)
         
         return bceloss
 

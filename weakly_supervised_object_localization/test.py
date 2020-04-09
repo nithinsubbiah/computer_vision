@@ -157,11 +157,8 @@ def test_net(name,
             # TODO: Visualize here using tensorboard
             # TODO: use the logger that is an argument to this function
             print('Visualizing')
-
-
-
-
-
+            #TODO: check im2show
+            logger.add_image('test/img_{}'.format(i), im2show[None,:,:,-1::-1], step)
 
     with open(det_file, 'wb') as f:
         cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)
