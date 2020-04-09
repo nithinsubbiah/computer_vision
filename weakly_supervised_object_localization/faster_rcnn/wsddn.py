@@ -69,10 +69,10 @@ class WSDDN(nn.Module):
                             nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
                         )
 
-        self.roi_pool = RoIPool(pooled_height = 6, pooled_width=6, spatial_scale=1/16.0)
+        self.roi_pool = RoIPool(pooled_height = 7, pooled_width=7, spatial_scale=1/16.0)
 
         self.classifier = nn.Sequential(
-            nn.Linear(in_features=9216, out_features=4096),
+            nn.Linear(in_features=12544, out_features=4096),
             nn.ReLU(inplace=True),
             nn.Linear(in_features=4096, out_features=4096),
             nn.ReLU(inplace=True)
@@ -110,10 +110,8 @@ class WSDDN(nn.Module):
         # Checkout faster_rcnn.py for inspiration
 
         x = self.features(im_data)
-        import pdb; pdb.set_trace()
 
         x = self.roi_pool(x, rois)
-        import pdb; pdb.set_trace()
 
         x = x.view(x.shape[0],-1)
         
@@ -126,7 +124,6 @@ class WSDDN(nn.Module):
         out_detection = self.detection_activation(out_detection)
 
         cls_prob = out_classification * out_detection
-        import pdb; pdb.set_trace()
 
         if self.training:
             label_vec = torch.from_numpy(gt_vec).cuda().float()
@@ -145,8 +142,7 @@ class WSDDN(nn.Module):
         #TODO: Compute the appropriate loss using the cls_prob that is the
         #output of forward()
         #Checkout forward() to see how it is called 
-
-        import pdb; pdb.set_trace()
+        bceloss = F.binary_cross_entropy(torch.sum(cls_prob,dim=0),label_vec,size_average=False)
         
         return bceloss
 
