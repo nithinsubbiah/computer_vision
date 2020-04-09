@@ -55,18 +55,33 @@ class WSDDN(nn.Module):
             print(classes)
 
         #TODO: Define the WSDDN model (look at faster_rcnn.py)
+        self.features = nn.Sequential(
+                            nn.Conv2d(in_channels=3, out_channels=64, kernel_size=11, stride=4, padding=2),
+                            nn.ReLU(inplace=True),
+                            nn.MaxPool2d(kernel_size=3,stride=2,dilation=1,ceil_mode=False),
+                            nn.Conv2d(in_channels=64, out_channels=192, kernel_size=5, stride=1, padding=2),
+                            nn.ReLU(inplace=True),
+                            nn.MaxPool2d(kernel_size=3,stride=2,dilation=1,ceil_mode=False),
+                            nn.Conv2d(in_channels=192, out_channels=384, kernel_size=3, stride=1, padding=1),
+                            nn.ReLU(inplace=True),
+                            nn.Conv2d(in_channels=384, out_channels=256, kernel_size=3, stride=1, padding=1),
+                            nn.ReLU(inplace=True),
+                            nn.Conv2d(256, 256, kernel_size=(3, 3), stride=(1, 1), padding=(1, 1)),
+                        )
 
+        self.roi_pool = RoIPool(pooled_height = 6, pooled_width=6, spatial_scale=1/16.0)
 
+        self.classifier = nn.Sequential(
+            nn.Linear(in_features=9216, out_features=4096),
+            nn.ReLU(inplace=True),
+            nn.Linear(in_features=4096, out_features=4096),
+            nn.ReLU(inplace=True)
+        )
 
-
-
-
-
-
-
-
-
-
+        self.classification_score = nn.Linear(in_features=4096, out_features=20)
+        self.detection_score = nn.Linear(in_features=4096, out_features=20)
+        self.classification_activation = nn.Softmax(dim=1)
+        self.detection_activation = nn.Softmax(dim=0)
 
         # loss
         self.cross_entropy = None
@@ -94,13 +109,24 @@ class WSDDN(nn.Module):
         # compute cls_prob which are N_roi X 20 scores
         # Checkout faster_rcnn.py for inspiration
 
+        x = self.features(im_data)
+        import pdb; pdb.set_trace()
 
+        x = self.roi_pool(x, rois)
+        import pdb; pdb.set_trace()
 
+        x = x.view(x.shape[0],-1)
+        
+        x = self.classifier(x)
 
+        out_classification = self.classification_score(x)
+        out_classification = self.classification_activation(out_classification)
 
+        out_detection = self.detection_score(x)
+        out_detection = self.detection_activation(out_detection)
 
-
-
+        cls_prob = out_classification * out_detection
+        import pdb; pdb.set_trace()
 
         if self.training:
             label_vec = torch.from_numpy(gt_vec).cuda().float()
@@ -120,16 +146,8 @@ class WSDDN(nn.Module):
         #output of forward()
         #Checkout forward() to see how it is called 
 
-
-
-
-
-
-
-
-
-
-
+        import pdb; pdb.set_trace()
+        
         return bceloss
 
     def detect(self, image, rois, thr=0.3):
