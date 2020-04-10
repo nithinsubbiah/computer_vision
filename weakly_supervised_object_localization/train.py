@@ -42,6 +42,7 @@ def log_print(text, color=None, on_color=None, attrs=None):
 # hyper-parameters
 # ------------
 imdb_name = 'voc_2007_trainval'
+imdb_test_name = 'voc_2007_test'
 cfg_file = 'experiments/cfgs/wsddn.yml'
 pretrained_model = 'data/pretrained_model/alexnet_imagenet.npy'
 output_dir = 'models/saved_model'
@@ -79,6 +80,8 @@ imdb = get_imdb(imdb_name)
 rdl_roidb.prepare_roidb(imdb)
 roidb = imdb.roidb
 data_layer = RoIDataLayer(roidb, imdb.num_classes)
+
+imdb_test = get_imdb(imdb_test_name)
 
 # Create network and initialize
 net = WSDDN(classes=imdb.classes, debug=_DEBUG)
@@ -160,10 +163,10 @@ for step in range(start_step, end_step + 1):
         re_cnt = True
 
     #TODO: evaluate the model every N iterations (N defined in handout)
-
+    
     if step%vis_interval==0 and step>0:
         net.eval()
-        aps = test_net(name='WSDDN_TEST', net=net, imdb=imdb, thresh=1e-4, visualize=True, logger = tboard_writer, step = step)
+        aps = test_net(name='WSDDN_test',imdb=imdb_test, net=net, thresh=1e-4, visualize=True, logger = tboard_writer, step = step)
         net.train()
 
 
