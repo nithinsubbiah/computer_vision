@@ -142,8 +142,8 @@ class WSDDN(nn.Module):
         """
         #TODO: Compute the appropriate loss using the cls_prob that is the
         #output of forward()
-        #Checkout forward() to see how it is called 
-        bceloss = F.binary_cross_entropy_with_logits(torch.sum(cls_prob,dim=0),label_vec,size_average=False)
+        #Checkout forward() to see how it is called
+        bceloss = F.binary_cross_entropy_with_logits(torch.sum(cls_prob,dim=0),torch.squeeze(label_vec),size_average=False)
         
         return bceloss
 

@@ -126,8 +126,8 @@ def test_net(name,
             im2show = np.copy(im)
 
         # skip j = 0, because it's the background class
-        for j in xrange(1, imdb.num_classes + 1):
-            newj = j - 1
+        for j in xrange(0, imdb.num_classes):
+            newj = j
             inds = np.where(scores[:, newj] > thresh)[0]
             cls_scores = scores[inds, newj]
             cls_boxes = boxes[inds, newj * 4:(newj + 1) * 4]
@@ -136,7 +136,7 @@ def test_net(name,
             keep = nms(cls_dets, cfg.TEST.NMS)
             cls_dets = cls_dets[keep, :]
             if visualize:
-                im2show = vis_detections(im2show, imdb.classes[j], cls_dets)
+                im2show = vis_detections(im2show, imdb.classes[j], cls_dets, thresh)
             all_boxes[j][i] = cls_dets
 
         # Limit to max_per_image detections *over all classes*
@@ -153,14 +153,13 @@ def test_net(name,
         print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s'.format(
             i + 1, num_images, detect_time, nms_time))
 
-        import pdb;pdb.set_trace()
-
         if visualize and np.random.rand() < 0.01:
             # TODO: Visualize here using tensorboard
             # TODO: use the logger that is an argument to this function
             print('Visualizing')
             #TODO: check im2show
-            logger.add_image('test/img_{}'.format(i), im2show[None,:,:,-1::-1], step)
+	    im2show = np.rollaxis(im2show,-1)
+            logger.add_image('test/img_{}'.format(i), im2show, step)
 
     with open(det_file, 'wb') as f:
         cPickle.dump(all_boxes, f, cPickle.HIGHEST_PROTOCOL)

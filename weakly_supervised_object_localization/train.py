@@ -55,8 +55,8 @@ lr_decay = 1. / 10
 
 rand_seed = 1024
 _DEBUG = False
-use_tensorboard = False
-use_visdom = False
+use_tensorboard = True
+use_visdom = True
 log_grads = False
 
 remove_all_log = False  # remove all historical experiments in TensorBoard
@@ -116,7 +116,7 @@ params = list(net.parameters())
 optimizer = torch.optim.SGD(params[2:], lr=lr, 
                             momentum=momentum, weight_decay=weight_decay)
 
-visdom_logger = visdom.Visdom(server='',port='8097')
+visdom_logger = visdom.Visdom(server='ec2-18-189-20-180.us-east-2.compute.amazonaws.com',port='8097')
 tboard_writer = SummaryWriter(flush_secs=1)
 
 if not os.path.exists(output_dir):
@@ -161,39 +161,37 @@ for step in range(start_step, end_step + 1):
 
     #TODO: evaluate the model every N iterations (N defined in handout)
 
-    if step%vis_interval==0:
-    # if step%vis_interval==0 and step>0:
+    if step%vis_interval==0 and step>0:
         net.eval()
-        aps = test_net(name='WSDDN_TEST', net=net, imdb=imdb_test, thresh=1e-4, visualize=True, logger = tboard_writer, step = step)
+        aps = test_net(name='WSDDN_TEST', net=net, imdb=imdb, thresh=1e-4, visualize=True, logger = tboard_writer, step = step)
         net.train()
 
 
     #TODO: Perform all visualizations here
     #You can define other interval variable if you want (this is just an
     #example)
-    #The intervals for different things are defined in the handout
-    
-    tboard_writer.add_scalar('train/loss', loss.item(), step_cnt)
-    if step_cnt == 0:
-        visdom_loss = visdom_logger.line(X=np.array([step_cnt]), Y=np.array([loss.item()]), opts=dict(title='train/loss'))
+    #The intervals for different things are defined in the handout 
+    tboard_writer.add_scalar('train/loss', loss.item(), step)
+    if step == 0:
+        visdom_loss = visdom_logger.line(X=np.array([step]), Y=np.array([loss.item()]), opts=dict(title='train/loss'))
     else:
-        visdom_loss = visdom_logger.line(X=np.array([step_cnt]), Y=np.array([loss.item()]), win = vis_loss, update='append', opts=dict(title='train/loss'))
+        visdom_loss = visdom_logger.line(X=np.array([step]), Y=np.array([loss.item()]), win = visdom_loss, update='append', opts=dict(title='train/loss'))
 
-    if visualize and step % vis_interval == 0:
+    if visualize and step % vis_interval == 0 and step>0:
         #TODO: Create required visualizations
         if use_tensorboard:
             print('Logging to Tensorboard')
 
             for class_no in range(imdb.num_classes):
-                tboard_writer.add_scalar('test/mAP/class_{}'.format(imdb.classes[class_no]), aps[class_no], step_cnt)
+                tboard_writer.add_scalar('test/mAP/class_{}'.format(imdb.classes[class_no]), aps[class_no], step)
                 
 
         if use_visdom:
             print('Logging to visdom')
             if step == vis_interval:
-                vis_map = vis.line(X=np.array([step_cnt]), Y=np.array([np.mean(aps)]), opts=dict(title='eval/mAP'))
+                vis_map = visdom_logger.line(X=np.array([step]), Y=np.array([np.mean(aps)]), opts=dict(title='eval/mAP'))
             else:
-                vis_map = vis.line(X=np.array([step_cnt]), Y=np.array([np.mean(aps)]), win=vis_map, update='append', opts=dict(title='eval/mAP'))
+                vis_map = visdom_logger.line(X=np.array([step]), Y=np.array([np.mean(aps)]), win=vis_map, update='append', opts=dict(title='eval/mAP'))
 
     # Save model occasionally
     if (step % cfg.TRAIN.SNAPSHOT_ITERS == 0) and step > 0:
