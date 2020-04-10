@@ -153,6 +153,8 @@ def test_net(name,
         print('im_detect: {:d}/{:d} {:.3f}s {:.3f}s'.format(
             i + 1, num_images, detect_time, nms_time))
 
+        import pdb;pdb.set_trace()
+
         if visualize and np.random.rand() < 0.01:
             # TODO: Visualize here using tensorboard
             # TODO: use the logger that is an argument to this function

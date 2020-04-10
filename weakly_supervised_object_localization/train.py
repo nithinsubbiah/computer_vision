@@ -161,7 +161,8 @@ for step in range(start_step, end_step + 1):
 
     #TODO: evaluate the model every N iterations (N defined in handout)
 
-    if step%vis_interval==0 and step>0:
+    if step%vis_interval==0:
+    # if step%vis_interval==0 and step>0:
         net.eval()
         aps = test_net(name='WSDDN_TEST', net=net, imdb=imdb_test, thresh=1e-4, visualize=True, logger = tboard_writer, step = step)
         net.train()
