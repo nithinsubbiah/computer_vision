@@ -1,6 +1,12 @@
 from torch.utils.data import Dataset
 from external.vqa.vqa import VQA
 
+import operator
+from itertools import islice
+
+def take(n, iterable):
+    "Return first n items of the iterable as a list"
+    return list(islice(iterable, n))
 
 class VqaDataset(Dataset):
     """
@@ -41,7 +47,7 @@ class VqaDataset(Dataset):
         # Create the question map if necessary
         if question_word_to_id_map is None:
             ############ 1.6 TODO
-
+            self.question_word_to_id_map = 
 
             ############
             raise NotImplementedError()
@@ -51,7 +57,7 @@ class VqaDataset(Dataset):
         # Create the answer map if necessary
         if answer_to_id_map is None:
             ############ 1.7 TODO
-
+            self.answer_to_id_map = 
 
             ############
             raise NotImplementedError()
@@ -68,17 +74,17 @@ class VqaDataset(Dataset):
             A list of str, words from the split, order remained.
         """
 	
-	word_list = []
+        word_list = []
 
-	for sentence in sentences:
-	    sentence = sentence.lower()
-	    punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
-	    for x in sentence: 
-		if x in punctuations:
-		    sentence = sentence.replace(x, "")
-	    word_list.extend(sentence.split(" "))
-	
-	return word_list
+        for sentence in sentences:
+            sentence = sentence.lower()
+            punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
+            for x in sentence: 
+            if x in punctuations:
+                sentence = sentence.replace(x, "")
+            word_list.extend(sentence.split(" "))
+        
+        return word_list
 
     def _create_id_map(self, word_list, max_list_length):
         """
@@ -90,12 +96,24 @@ class VqaDataset(Dataset):
             A map (dict) from str to id (rank)
         """
 
-        ############ 1.5 TODO
+        freq_words = {}
 
+        for word in word_list:
+            if word in freq_words:
+                freq_words[word] += 1
+            else:
+                freq_words[word] = 1
 
-        ############
-        raise NotImplementedError()
+        # Sort dictionary by frequency of words
+        freq_words = dict(sorted(freq_words.items(), key=operator.itemgetter(1),reverse=True))
+        
+        # Update dictionary for the max list length
+        freq_words = take(max_list_length,freq_words.items())
 
+        freq_words = [(val[0], idx+1) for idx, val in enumerate(freq_words)]
+        freq_words = dict(freq_words)
+
+        return freq_words
 
     def __len__(self):
         ############ 1.8 TODO
