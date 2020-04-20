@@ -30,6 +30,7 @@ class VqaDataset(Dataset):
         self._image_filename_pattern = image_filename_pattern
         self._transform = transform
         self._max_question_length = 26
+        self.ques_ids = self._vqa.getQuesIds()
 
         # Publicly accessible dataset parameters
         self.question_word_list_length = question_word_list_length + 1
@@ -46,21 +47,26 @@ class VqaDataset(Dataset):
 
         # Create the question map if necessary
         if question_word_to_id_map is None:
-            ############ 1.6 TODO
-            self.question_word_to_id_map = 
+            questions_list = []
+            questions = self._vqa.questions['questions']
 
-            ############
-            raise NotImplementedError()
+            for question in questions:
+                questions_list.append(question['question'])
+
+            word_list = self._create_word_list(questions_list)
+            self.question_word_to_id_map = self._create_id_map(word_list,self.question_word_list_length)
         else:
             self.question_word_to_id_map = question_word_to_id_map
 
         # Create the answer map if necessary
         if answer_to_id_map is None:
-            ############ 1.7 TODO
-            self.answer_to_id_map = 
+            answer_list = []
+            answers = self._vqa.dataset['annotations']
+            for multiple_answers in answers['answers']:
+                answer_list.append(multiple_answers['answer'])
 
-            ############
-            raise NotImplementedError()
+            self.answer_to_id_map = self._create_id_map(answer_list,self.answer_list_length)
+
         else:
             self.answer_to_id_map = answer_to_id_map
 
@@ -75,7 +81,7 @@ class VqaDataset(Dataset):
         """
 	
         word_list = []
-
+        # Source: https://www.geeksforgeeks.org/removing-punctuations-given-string/
         for sentence in sentences:
             sentence = sentence.lower()
             punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
@@ -110,17 +116,16 @@ class VqaDataset(Dataset):
         # Update dictionary for the max list length
         freq_words = take(max_list_length,freq_words.items())
 
-        freq_words = [(val[0], idx+1) for idx, val in enumerate(freq_words)]
+        freq_words = [(val[0], idx) for idx, val in enumerate(freq_words)]
         freq_words = dict(freq_words)
 
         return freq_words
 
     def __len__(self):
-        ############ 1.8 TODO
-
-
-        ############
-        raise NotImplementedError()
+        
+        #TODO: Check
+        # return len(self._vqa.dataset)
+        return len(self._vqa.getQuesIds)
 
     def __getitem__(self, idx):
         """
@@ -131,10 +136,7 @@ class VqaDataset(Dataset):
             A dict containing multiple torch tensors for image, question and answers.
         """
 
-        ############ 1.9 TODO
-        # figure out the idx-th item of dataset from the VQA API
-
-        ############
+        ques_id = self.ques_ids[idx]
 
         if self._cache_location is not None and self._pre_encoder is not None:
             ############ 3.2 TODO
