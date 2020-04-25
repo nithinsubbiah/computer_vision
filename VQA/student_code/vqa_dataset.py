@@ -131,7 +131,7 @@ class VqaDataset(Dataset):
 
     def __len__(self):
         
-        return len(self._vqa.getQuesIds)
+        return len(self.ques_ids)
 
     def __getitem__(self, idx):
         """
@@ -166,9 +166,16 @@ class VqaDataset(Dataset):
                 img = transforms.functional.to_tensor(img)
 
         question = self._vqa.questions['questions'][idx]['question']
-        question_split = self._create_word_list(question)[:self._max_question_length]
-        question_one_hot = (np.array(question_split) == np.array(list(self.question_word_to_id_map.keys()))).astype(int)
+        question_split = self._create_word_list([question])
+        if len(question_split) > self._max_question_length:
+                question_split = question_split[:self._max_question_length]
+        total_question_words = np.array(list(self.question_word_to_id_map.keys()))
+        question_split = np.array(question_split)
+        print(question_split.shape)
+        print(total_question_words.shape)
+        #import pdb;pdb.set_trace()
 
+        question_one_hot = (question_split == total_question_words).astype(int)
         # If question has words not in vocabulary
         if np.sum(question_one_hot) < len(question_one_hot):
             question_one_hot[-1] = 1
