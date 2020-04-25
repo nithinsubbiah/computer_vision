@@ -1,5 +1,5 @@
 import torch.nn as nn
-from googlenet.googlenet import googlenet
+from external.googlenet.googlenet import googlenet
 
 class SimpleBaselineNet(nn.Module):
     """
@@ -18,8 +18,8 @@ class SimpleBaselineNet(nn.Module):
 	    
         image_embedding = self.ImageNet(image)
 
-        if len(image_embedding) > 1:
-            image_embedding = image_embedding[-1]
+        # if len(image_embedding) > 1:
+        #     image_embedding = image_embedding[-1]
         
         word_embedding = self.WordNet(question_encoding)
         feature_embedding = torch.cat([image_embedding,word_embedding])

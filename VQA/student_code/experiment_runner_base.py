@@ -13,6 +13,7 @@ class ExperimentRunnerBase(object):
         self._num_epochs = num_epochs
         self._log_freq = 10  # Steps
         self._test_freq = 250  # Steps
+        self.batch_size = batch_size
 
         self._train_dataset_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_data_loader_workers)
 
@@ -60,7 +61,12 @@ class ExperimentRunnerBase(object):
                 # Run the model and get the ground truth answers that you'll pass to your optimizer
                 # This logic should be generic; not specific to either the Simple Baseline or CoAttention.
 
-                predicted_answer = None # TODO
+                input_images = batch_data['image']
+                questions = batch_data['question_tensor']
+                predicted_answer = self._model(input_images,questions)
+
+                import pdb;pdb.set_trace()
+
                 ground_truth_answer = None # TODO
 
                 ############
