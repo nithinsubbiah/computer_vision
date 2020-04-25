@@ -158,7 +158,7 @@ class VqaDataset(Dataset):
             # load the image from disk, apply self._transform (if not None)
             fpath = os.path.join(self._image_dir,self._image_filename_pattern.format(img_id))
             img = Image.open(fpath)
-            
+            img = img.convert('RGB')
             if self._transform:
                 img = self._transform(img)
             else:
@@ -182,6 +182,8 @@ class VqaDataset(Dataset):
             else:
                 question_one_hot[idx,-1] = 1
         question_one_hot = torch.from_numpy(question_one_hot)
+
+        question_one_hot = torch.clamp(torch.sum(question_one_hot,dim=0),max=1)
 
         answers = self._vqa.dataset['annotations'][idx]['answers']
         answers_one_hot = np.zeros([10,self.answer_list_length])

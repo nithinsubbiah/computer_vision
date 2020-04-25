@@ -17,10 +17,14 @@ class SimpleBaselineNet(nn.Module):
     def forward(self, image, question_encoding):
 	    
         image_embedding = self.ImageNet(image)
-        
-        question_encoding = question_encoding.double()
+
+        if len(image_embedding) > 1:
+            image_embedding = image_embedding[-1]
+
+        # question_encoding = question_encoding.double()
         word_embedding = self.WordNet(question_encoding)
-        feature_embedding = torch.cat([image_embedding,word_embedding])
+        
+        feature_embedding = torch.cat([image_embedding,word_embedding]) 
         feature_embedding = self.LinearLayer(feature_embedding)
         output = self.activation(feature_embedding)
 

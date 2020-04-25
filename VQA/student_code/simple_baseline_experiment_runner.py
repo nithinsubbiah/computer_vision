@@ -33,6 +33,7 @@ class SimpleBaselineExperimentRunner(ExperimentRunnerBase):
                                    answer_to_id_map=None,
                                    ############
                                    )
+                                   
         val_dataset = VqaDataset(image_dir=test_image_dir,
                                  question_json_file_path=test_question_path,
                                  annotation_json_file_path=test_annotation_path,
