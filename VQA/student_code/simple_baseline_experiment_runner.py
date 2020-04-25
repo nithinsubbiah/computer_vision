@@ -50,5 +50,7 @@ class SimpleBaselineExperimentRunner(ExperimentRunnerBase):
     def _optimize(self, predicted_answers, true_answer_ids):
         ############ 2.7 TODO: compute the loss, run back propagation, take optimization step.
 
+        #clamp before backward
+        # grad - norm and not value
         ############
         raise NotImplementedError()

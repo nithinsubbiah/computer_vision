@@ -3,6 +3,12 @@ from external.vqa.vqa import VQA
 
 import operator
 from itertools import islice
+import os
+import numpy as np
+
+from PIL import Image
+from torchvision import transforms
+import torch
 
 def take(n, iterable):
     "Return first n items of the iterable as a list"
@@ -86,8 +92,8 @@ class VqaDataset(Dataset):
             sentence = sentence.lower()
             punctuations = '''!()-[]{};:'"\,<>./?@#$%^&*_~'''
             for x in sentence: 
-            if x in punctuations:
-                sentence = sentence.replace(x, "")
+                if x in punctuations:
+                    sentence = sentence.replace(x, "")
             word_list.extend(sentence.split(" "))
         
         return word_list
@@ -123,8 +129,6 @@ class VqaDataset(Dataset):
 
     def __len__(self):
         
-        #TODO: Check
-        # return len(self._vqa.dataset)
         return len(self._vqa.getQuesIds)
 
     def __getitem__(self, idx):
@@ -137,6 +141,10 @@ class VqaDataset(Dataset):
         """
 
         ques_id = self.ques_ids[idx]
+        question = self._vqa.loadQA(ques_id)
+        img_id = question[0]['image_id']
+        img_id = str(img_id)
+        img_id = img_id.zfill(12)
 
         if self._cache_location is not None and self._pre_encoder is not None:
             ############ 3.2 TODO
@@ -145,14 +153,39 @@ class VqaDataset(Dataset):
             ############
             raise NotImplementedError()
         else:
-            ############ 1.9 TODO
             # load the image from disk, apply self._transform (if not None)
+            fpath = os.path.join(self._image_dir,self._image_filename_pattern.format(img_id))
+            img = Image.open(fpath)
+            
+            if self._transform:
+                img = self._transform(img)
+            else:
+                #TODO: Check if this is right
+                img = transforms.functional.to_tensor(img)
 
-            ############
-            raise NotImplementedError()
+        question = self._vqa.questions['questions'][idx]['question']
+        question_split = self._create_word_list(question)[:self._max_question_length]
+        question_one_hot = (np.array(question_split) == np.array(list(self.question_word_to_id_map.keys()))).astype(int)
 
-        ############ 1.9 TODO
-        # load and encode the question and answers, convert to torch tensors
+        # If question has words not in vocabulary
+        if np.sum(question_one_hot) < len(question_one_hot):
+            question_one_hot[-1] = 1
+        question_one_hot = torch.from_numpy(question_one_hot)
 
-        ############
-        raise NotImplementedError()
+        answers = self._vqa.dataset['annotations'][idx]['answers']
+        answers_one_hot_list = []
+        for answer in answers:
+            answer_one_hot = (np.array(answer['answer']) == np.array(list(self.answer_to_id_map.keys()))).astype(int) 
+            answer_one_hot = torch.from_numpy(answer_one_hot)
+            answers_one_hot_list.append(answer_one_hot)
+        
+        answers_one_hot_list = torch.stack(answers_one_hot_list)
+        
+        img = img.cuda()
+        question_one_hot = question_one_hot.cuda()
+        answers_one_hot_list = answers_one_hot_list.cuda()
+
+        datapoint = {'image':img, 'question_tensor':question_one_hot, 'answers_tensor':answers_one_hot_list}   
+
+        return datapoint 
+        
