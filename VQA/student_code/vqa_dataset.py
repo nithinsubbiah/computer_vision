@@ -68,8 +68,10 @@ class VqaDataset(Dataset):
         if answer_to_id_map is None:
             answer_list = []
             answers = self._vqa.dataset['annotations']
-            for multiple_answers in answers['answers']:
-                answer_list.append(multiple_answers['answer'])
+            for answer in answers:
+                all_answers = answer['answers']
+                for each_answer in all_answers:
+                    answer_list.append(each_answer['answer'])
 
             self.answer_to_id_map = self._create_id_map(answer_list,self.answer_list_length)
 
@@ -77,7 +79,7 @@ class VqaDataset(Dataset):
             self.answer_to_id_map = answer_to_id_map
 
 
-     def _create_word_list(self, sentences):
+    def _create_word_list(self, sentences):
         """
         Turn a list of sentences into a list of processed words (no punctuation, lowercase, etc)
         Args:
