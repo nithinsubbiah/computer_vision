@@ -191,17 +191,18 @@ class VqaDataset(Dataset):
             answer = answer_dict['answer']
             contains_word = ((answer in total_answer_words) == True)
             if contains_word:
-                hot_idx = np.where(word==total_answer_words)[0][0]
+                hot_idx = np.where(answer==total_answer_words)[0][0]
                 answers_one_hot[idx,hot_idx] = 1
             else:
                 answers_one_hot[idx,-1] = 1
         
         answers_one_hot = torch.from_numpy(answers_one_hot)        
-        img = img.cuda()
-        question_one_hot = question_one_hot.cuda()
-        answers_one_hot_list = answers_one_hot_list.cuda()
+        #img = img.cuda()
+        #question_one_hot = question_one_hot.cuda()
+        #answers_one_hot_list = answers_one_hot_list.cuda()
 
-        datapoint = {'image':img, 'question_tensor':question_one_hot, 'answers_tensor':answers_one_hot_list}   
+        #datapoint = {'image':img, 'question_tensor':question_one_hot, 'answers_tensor':answers_one_hot}   
 
-        return datapoint 
+        #return datapoint 
+        return img, question_one_hot, answers_one_hot
         
