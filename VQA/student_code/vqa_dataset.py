@@ -167,29 +167,36 @@ class VqaDataset(Dataset):
 
         question = self._vqa.questions['questions'][idx]['question']
         question_split = self._create_word_list([question])
-        if len(question_split) > self._max_question_length:
-                question_split = question_split[:self._max_question_length]
+        
         total_question_words = np.array(list(self.question_word_to_id_map.keys()))
-        question_split = np.array(question_split)
-        print(question_split.shape)
-        print(total_question_words.shape)
-        #import pdb;pdb.set_trace()
+        
+        question_one_hot = np.zeros([self._max_question_length,self.question_word_list_length])
 
-        question_one_hot = (question_split == total_question_words).astype(int)
-        # If question has words not in vocabulary
-        if np.sum(question_one_hot) < len(question_one_hot):
-            question_one_hot[-1] = 1
+        for idx, word in enumerate(question_split):
+            if idx == self._max_question_length:
+                break
+            contains_word = ((word in total_question_words) == True)
+            if contains_word:
+                hot_idx = np.where(word==total_question_words)[0][0]
+                question_one_hot[idx,hot_idx] = 1
+            else:
+                question_one_hot[idx,-1] = 1
         question_one_hot = torch.from_numpy(question_one_hot)
 
         answers = self._vqa.dataset['annotations'][idx]['answers']
-        answers_one_hot_list = []
-        for answer in answers:
-            answer_one_hot = (np.array(answer['answer']) == np.array(list(self.answer_to_id_map.keys()))).astype(int) 
-            answer_one_hot = torch.from_numpy(answer_one_hot)
-            answers_one_hot_list.append(answer_one_hot)
+        answers_one_hot = np.zeros([10,self.answer_list_length])
+        total_answer_words = np.array(list(self.answer_to_id_map.keys()))
+
+        for idx, answer_dict in enumerate(answers):
+            answer = answer_dict['answer']
+            contains_word = ((answer in total_answer_words) == True)
+            if contains_word:
+                hot_idx = np.where(word==total_answer_words)[0][0]
+                answers_one_hot[idx,hot_idx] = 1
+            else:
+                answers_one_hot[idx,-1] = 1
         
-        answers_one_hot_list = torch.stack(answers_one_hot_list)
-        
+        answers_one_hot = torch.from_numpy(answers_one_hot)        
         img = img.cuda()
         question_one_hot = question_one_hot.cuda()
         answers_one_hot_list = answers_one_hot_list.cuda()
