@@ -61,8 +61,11 @@ class ExperimentRunnerBase(object):
                 # Run the model and get the ground truth answers that you'll pass to your optimizer
                 # This logic should be generic; not specific to either the Simple Baseline or CoAttention.
 
-                input_images = batch_data['image']
-                questions = batch_data['question_tensor']
+                input_images, questions, answers = batch_data
+                input_images = input_images.cuda()
+                questions = questions.cuda()
+                answers = answers.cuda()
+                
                 predicted_answer = self._model(input_images,questions)
 
                 import pdb;pdb.set_trace()
