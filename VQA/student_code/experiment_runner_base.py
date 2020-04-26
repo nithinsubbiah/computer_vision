@@ -22,8 +22,8 @@ class ExperimentRunnerBase(object):
         self._train_dataset_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_data_loader_workers)
 
         # If you want to, you can shuffle the validation dataset and only use a subset of it to speed up debugging
-        # self._val_dataset_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_data_loader_workers)
-        self._val_dataset_loader = DataLoader(val_dataset, shuffle=True, num_workers=num_data_loader_workers)
+        self._val_dataset_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=True, num_workers=num_data_loader_workers)
+        #self._val_dataset_loader = DataLoader(val_dataset, shuffle=True, num_workers=num_data_loader_workers)
 
         # Use the GPU if it's available.
         self._cuda = torch.cuda.is_available()
@@ -55,9 +55,9 @@ class ExperimentRunnerBase(object):
         for batch_id, batch_data in enumerate(self._val_dataset_loader):
 
             input_images, questions, answers, question_word, answer_word = batch_data
-            input_images = input_images[:1000].cuda()
-            questions = questions[:1000].cuda()
-            answers = answers[:1000].cuda()
+            input_images = input_images.cuda()
+            questions = questions.cuda()
+            answers = answers.cuda()
             
             predicted_answer = self._model(input_images,questions)
 
@@ -70,10 +70,11 @@ class ExperimentRunnerBase(object):
                 chosen = True
 
             output_idx = torch.argmax(torch.sum(answers,dim=1),dim=1)
-            
             _, predicted_idx = torch.max(predicted_answer,dim=1)
             no_correct += (output_idx==predicted_idx).sum().item()
             no_total += predicted_idx.shape[0]
+            if no_total > 1000:
+                break
 
         val_accuracy = no_correct/no_total
 
@@ -126,7 +127,7 @@ class ExperimentRunnerBase(object):
                     self.writer.add_scalar('train/loss', loss.item(), current_step)
                 
 
-                if current_step % self._test_freq == 0 and current_step>0:
+                if current_step % self._test_freq == 0:
                     self._model.eval()
                     val_accuracy = self.validate()
                     print("Epoch: {} has val accuracy {}".format(epoch, val_accuracy))
