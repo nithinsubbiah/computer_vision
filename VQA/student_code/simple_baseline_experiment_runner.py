@@ -2,8 +2,9 @@ from student_code.simple_baseline_net import SimpleBaselineNet
 from student_code.experiment_runner_base import ExperimentRunnerBase
 from student_code.vqa_dataset import VqaDataset
 
-from torchvision import transforms
 import torch
+import torch.nn as nn
+from torchvision import transforms
 
 
 class SimpleBaselineExperimentRunner(ExperimentRunnerBase):
@@ -58,7 +59,9 @@ class SimpleBaselineExperimentRunner(ExperimentRunnerBase):
     def _optimize(self, predicted_answers, true_answer_ids):
         ############ 2.7 TODO: compute the loss, run back propagation, take optimization step.
 
-        #clamp before backward
-        # grad - norm and not value
-        ############
-        raise NotImplementedError()
+        criterion = nn.CrossEntropyLoss()
+        loss = criterion(predicted_answers, true_answer_ids)
+        loss.backward()
+        self.optimizer.step()
+
+        return loss        

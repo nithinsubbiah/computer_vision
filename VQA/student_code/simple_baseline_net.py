@@ -10,7 +10,6 @@ class SimpleBaselineNet(nn.Module):
         super().__init__()
 	
         self.ImageNet = googlenet(pretrained=True)
-        #TODO:what's in_features and out_features?
         self.WordNet = nn.Linear(in_features=5747,out_features=1000)
         self.LinearLayer = nn.Linear(in_features=2000,out_features=5217)
         self.activation = nn.Softmax(dim=1)

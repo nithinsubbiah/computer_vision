@@ -5,6 +5,7 @@ import operator
 from itertools import islice
 import os
 import numpy as np
+from collections import Counter 
 
 from PIL import Image
 from torchvision import transforms
@@ -166,6 +167,7 @@ class VqaDataset(Dataset):
                 img = transforms.functional.to_tensor(img)
 
         question = self._vqa.questions['questions'][idx]['question']
+        question_to_return = question
         question_split = self._create_word_list([question])
         
         total_question_words = np.array(list(self.question_word_to_id_map.keys()))
@@ -189,14 +191,20 @@ class VqaDataset(Dataset):
         answers_one_hot = np.zeros([10,self.answer_list_length])
         total_answer_words = np.array(list(self.answer_to_id_map.keys()))
 
+        all_answer = []
+
         for idx, answer_dict in enumerate(answers):
             answer = answer_dict['answer']
+            all_answer.append(answer)
             contains_word = ((answer in total_answer_words) == True)
             if contains_word:
                 hot_idx = np.where(answer==total_answer_words)[0][0]
                 answers_one_hot[idx,hot_idx] = 1
             else:
                 answers_one_hot[idx,-1] = 1
+        
+        occurence_count = Counter(all_answer) 
+        answer_to_return = occurence_count.most_common(1)[0][0] 
         
         answers_one_hot = torch.from_numpy(answers_one_hot)        
         #img = img.cuda()
@@ -206,5 +214,5 @@ class VqaDataset(Dataset):
         #datapoint = {'image':img, 'question_tensor':question_one_hot, 'answers_tensor':answers_one_hot}   
 
         #return datapoint 
-        return img, question_one_hot, answers_one_hot
+        return img, question_one_hot, answers_one_hot, question_to_return, answer_to_return
         
