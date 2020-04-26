@@ -22,7 +22,8 @@ class ExperimentRunnerBase(object):
         self._train_dataset_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=num_data_loader_workers)
 
         # If you want to, you can shuffle the validation dataset and only use a subset of it to speed up debugging
-        self._val_dataset_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_data_loader_workers)
+        # self._val_dataset_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False, num_workers=num_data_loader_workers)
+        self._val_dataset_loader = DataLoader(val_dataset, shuffle=True, num_workers=num_data_loader_workers)
 
         # Use the GPU if it's available.
         self._cuda = torch.cuda.is_available()
@@ -54,9 +55,9 @@ class ExperimentRunnerBase(object):
         for batch_id, batch_data in enumerate(self._val_dataset_loader):
 
             input_images, questions, answers, question_word, answer_word = batch_data
-            input_images = input_images.cuda()
-            questions = questions.cuda()
-            answers = answers.cuda()
+            input_images = input_images[:1000].cuda()
+            questions = questions[:1000].cuda()
+            answers = answers[:1000].cuda()
             
             predicted_answer = self._model(input_images,questions)
 
