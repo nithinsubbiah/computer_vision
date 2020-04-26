@@ -66,6 +66,7 @@ class ExperimentRunnerBase(object):
                 plt_question = question_word[rand_idx]
                 plt_gt_answer = answer_word[rand_idx]
                 plt_pred_answer = predicted_answer[rand_idx]
+                chosen = True
 
             output_idx = torch.argmax(torch.sum(answers,dim=1),dim=1)
             
