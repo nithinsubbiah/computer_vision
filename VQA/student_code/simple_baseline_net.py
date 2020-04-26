@@ -17,8 +17,10 @@ class SimpleBaselineNet(nn.Module):
     def forward(self, image, question_encoding):
 	    
         image_embedding = self.ImageNet(image)
-        if len(image_embedding) > 1:
-            image_embedding = image_embedding[-1]
+        #if len(image_embedding) > 1:
+        #    image_embedding = image_embedding[-1]
+        if type(image_embedding) == tuple:
+                image_embedding = image_embedding[0]
 
         question_encoding = question_encoding.float()
         word_embedding = self.WordNet(question_encoding)

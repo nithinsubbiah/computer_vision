@@ -61,7 +61,7 @@ class ExperimentRunnerBase(object):
             predicted_answer = self._model(input_images,questions)
 
             if not chosen:
-                rand_idx = random.randint(0,questions.shape[0])
+                rand_idx = random.randint(0,questions.shape[0]-1)
                 plt_img = input_images[rand_idx]
                 plt_question = question_word[rand_idx]
                 plt_gt_answer = answer_word[rand_idx]
@@ -123,11 +123,13 @@ class ExperimentRunnerBase(object):
                 if current_step % self._log_freq == 0:
                     print("Epoch: {}, Batch {}/{} has loss {}".format(epoch, batch_id, num_batches, loss))
                     self.writer.add_scalar('train/loss', loss.item(), current_step)
+                
 
-                if current_step % self._test_freq == 0:
+                if current_step % self._test_freq == 0 and current_step>0:
                     self._model.eval()
                     val_accuracy = self.validate()
                     print("Epoch: {} has val accuracy {}".format(epoch, val_accuracy))
                     self.writer.add_scalar('val/accuracy', val_accuracy, current_step)
+    
         
         torch.save(self._model.state_dict(), './')
