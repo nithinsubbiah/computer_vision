@@ -116,7 +116,7 @@ class ExperimentRunnerBase(object):
                 self._model.LinearLayer.weight.data.clamp_(max=20)
                 clip_grad_norm_(self._model.parameters(), 20)
                 # Optimize the model according to the predictions
-                ground_truth_answer = ground_truth_answer.cuda()
+                ground_truth_answer = ground_truth_answer.long().cuda()
                 loss = self._optimize(predicted_answer, ground_truth_answer)
 
                 if current_step % self._log_freq == 0:
