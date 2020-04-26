@@ -68,9 +68,12 @@ class ExperimentRunnerBase(object):
                 
                 predicted_answer = self._model(input_images,questions)
 
-                import pdb;pdb.set_trace()
 
-                ground_truth_answer = None # TODO
+                hot_idx = torch.argmax(torch.sum(answers,dim=1),dim=1)
+                ground_truth_answer = torch.zeros(answers.shape[0],answers.shape[-1])
+                
+                for row,col in enumerate(hot_idx):
+                        ground_truth_answer[row,col] = 1
 
                 ############
 
