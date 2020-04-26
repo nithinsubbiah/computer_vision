@@ -104,11 +104,11 @@ class ExperimentRunnerBase(object):
                 
                 predicted_answer = self._model(input_images,questions)
 
-                hot_idx = torch.argmax(torch.sum(answers,dim=1),dim=1)
-                ground_truth_answer = torch.zeros(answers.shape[0],answers.shape[-1])
+                ground_truth_idx = torch.argmax(torch.sum(answers,dim=1),dim=1)
+                # ground_truth_answer = torch.zeros(answers.shape[0],answers.shape[-1])
                 
-                for row,col in enumerate(hot_idx):
-                        ground_truth_answer[row,col] = 1
+                # for row,col in enumerate(hot_idx):
+                #         ground_truth_answer[row,col] = 1
                 ############
                 self.optimizer.zero_grad()
 
@@ -116,8 +116,8 @@ class ExperimentRunnerBase(object):
                 self._model.LinearLayer.weight.data.clamp_(max=20)
                 clip_grad_norm_(self._model.parameters(), 20)
                 # Optimize the model according to the predictions
-                ground_truth_answer = ground_truth_answer.long().cuda()
-                loss = self._optimize(predicted_answer, ground_truth_answer)
+                ground_truth_idx = ground_truth_idx.long().cuda()
+                loss = self._optimize(predicted_answer, ground_truth_idx)
 
                 if current_step % self._log_freq == 0:
                     print("Epoch: {}, Batch {}/{} has loss {}".format(epoch, batch_id, num_batches, loss))
