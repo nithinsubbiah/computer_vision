@@ -6,7 +6,7 @@ from tensorboardX import SummaryWriter
 
 import random
 import numpy as np
-
+import os 
 class ExperimentRunnerBase(object):
     """
     This base class contains the simple train and validation loops for your VQA experiments.
@@ -135,6 +135,5 @@ class ExperimentRunnerBase(object):
                     val_accuracy = self.validate(epoch)
                     print("Epoch: {} has val accuracy {}".format(epoch, val_accuracy))
                     self.writer.add_scalar('val/accuracy', val_accuracy, current_step)
-    
-        directory = '/home/ubuntu/computer_vision/VQA'
-        torch.save(self._model.state_dict(), directory)
+            directory = os.path.join('saved_model_{}.h5'.format(epoch))
+            torch.save(self._model, directory)
