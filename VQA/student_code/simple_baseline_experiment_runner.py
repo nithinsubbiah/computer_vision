@@ -51,9 +51,12 @@ class SimpleBaselineExperimentRunner(ExperimentRunnerBase):
         super().__init__(train_dataset, val_dataset, model, batch_size, num_epochs, num_data_loader_workers)
 
         ############ 2.5 TODO: set up optimizer
-        self.optimizer = torch.optim.SGD([{'params':model.WordNet.parameters(), 'lr':0.8},
-                                            {'params':model.LinearLayer.parameters(), 'lr':0.01}])
+        #self.optimizer = torch.optim.SGD([{'params':model.WordNet.parameters(), 'lr':0.8},
+        #                                    {'params':model.LinearLayer.parameters(), 'lr':0.01}])
         ############
+        self.optimizer = torch.optim.SGD([{'params':model.WordNet.parameters(), 'lr':0.01},
+                                            {'params':model.LinearLayer.parameters(), 'lr':0.8}])
+        #self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=1, gamma=0.1)
 
 
     def _optimize(self, predicted_answers, true_answer_ids):
@@ -63,5 +66,6 @@ class SimpleBaselineExperimentRunner(ExperimentRunnerBase):
         loss = criterion(predicted_answers, true_answer_ids)
         loss.backward()
         self.optimizer.step()
+        #self.scheduler.step()
 
         return loss        

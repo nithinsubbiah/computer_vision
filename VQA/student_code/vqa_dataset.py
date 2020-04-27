@@ -214,5 +214,4 @@ class VqaDataset(Dataset):
         #datapoint = {'image':img, 'question_tensor':question_one_hot, 'answers_tensor':answers_one_hot}   
 
         #return datapoint 
-        return img, question_one_hot, answers_one_hot, question_to_return, answer_to_return
-        
+        return img, question_one_hot, answers_one_hot, question_to_return, answer_to_return, list(self.answer_to_id_map.keys())        

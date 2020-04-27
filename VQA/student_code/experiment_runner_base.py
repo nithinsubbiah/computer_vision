@@ -5,6 +5,7 @@ from torch.nn.utils import clip_grad_norm_
 from tensorboardX import SummaryWriter
 
 import random
+import numpy as np
 
 class ExperimentRunnerBase(object):
     """
@@ -31,8 +32,9 @@ class ExperimentRunnerBase(object):
         if self._cuda:
             self._model = self._model.cuda()
 
-        self._log_validation = log_validation
-        self.writer = SummaryWriter()
+        #self._log_validation = log_validation
+        self._log_validation = True
+        self.writer = SummaryWriter(flush_secs=1)
 
     def _optimize(self, predicted_answers, true_answers):
         """
@@ -40,7 +42,7 @@ class ExperimentRunnerBase(object):
         """
         raise NotImplementedError()
 
-    def validate(self):
+    def validate(self, epoch):
         ############ 2.8 TODO
         # Should return your validation accuracy
         no_correct = 0
@@ -54,7 +56,7 @@ class ExperimentRunnerBase(object):
 
         for batch_id, batch_data in enumerate(self._val_dataset_loader):
 
-            input_images, questions, answers, question_word, answer_word = batch_data
+            input_images, questions, answers, question_word, answer_word, one_hot_to_answer = batch_data
             input_images = input_images.cuda()
             questions = questions.cuda()
             answers = answers.cuda()
@@ -66,7 +68,8 @@ class ExperimentRunnerBase(object):
                 plt_img = input_images[rand_idx]
                 plt_question = question_word[rand_idx]
                 plt_gt_answer = answer_word[rand_idx]
-                plt_pred_answer = predicted_answer[rand_idx]
+                plt_pred_answer_idx = torch.argmax(predicted_answer[rand_idx]).item()
+                plt_pred_answer = one_hot_to_answer[plt_pred_answer_idx][0]
                 chosen = True
 
             output_idx = torch.argmax(torch.sum(answers,dim=1),dim=1)
@@ -75,16 +78,16 @@ class ExperimentRunnerBase(object):
             no_total += predicted_idx.shape[0]
             if no_total > 1000:
                 break
-
         val_accuracy = no_correct/no_total
-
-        if self._log_validation:
+        if self._log_validation and epoch== 2:
+            plt_img = plt_img.data.cpu().numpy()
+            plt_img = (plt_img-np.min(plt_img))*255/(np.max(plt_img)-np.min(plt_img))
+            plt_img = plt_img.astype(np.uint8) 
             identifier = random.randint(0,1000)
-            self.writer.add_image('val/image_epoch'+str(self._num_epochs)+'_'+str(identifier), plt_img)
-            self.writer.text('val/question'+str(self._num_epochs)+'_'+str(identifier), plt_question)
-            self.writer.text('val/gt_ans'+str(self._num_epochs)+'_'+str(identifier), plt_gt_answer)
-            # self.writer.text('val/pred_ans'+str(self._num_epochs)+'_'+str(identifier), plt_pred_answer)
-            
+            self.writer.add_image('val/image_epoch'+str(self._num_epochs)+'_'+str(identifier), plt_img,dataformats='CHW')
+            self.writer.add_text('val/question'+str(epoch)+'_'+str(identifier), plt_question)
+            self.writer.add_text('val/gt_ans'+str(epoch)+'_'+str(identifier), plt_gt_answer)
+            self.writer.add_text('val/pred_ans'+str(epoch)+'_'+str(identifier), plt_pred_answer)
         return val_accuracy
 
     def train(self):
@@ -100,7 +103,7 @@ class ExperimentRunnerBase(object):
                 # Run the model and get the ground truth answers that you'll pass to your optimizer
                 # This logic should be generic; not specific to either the Simple Baseline or CoAttention.
 
-                input_images, questions, answers, _, _ = batch_data
+                input_images, questions, answers, _, _, _ = batch_data
                 input_images = input_images.cuda()
                 questions = questions.cuda()
                 answers = answers.cuda()
@@ -129,9 +132,9 @@ class ExperimentRunnerBase(object):
 
                 if current_step % self._test_freq == 0:
                     self._model.eval()
-                    val_accuracy = self.validate()
+                    val_accuracy = self.validate(epoch)
                     print("Epoch: {} has val accuracy {}".format(epoch, val_accuracy))
                     self.writer.add_scalar('val/accuracy', val_accuracy, current_step)
     
-        
-        torch.save(self._model.state_dict(), './')
+        directory = '/home/ubuntu/computer_vision/VQA'
+        torch.save(self._model.state_dict(), directory)
